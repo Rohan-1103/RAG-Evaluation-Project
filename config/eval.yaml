@@ -1,0 +1,606 @@
+# =============================================================================
+# EVALUATION ENGINE CONFIGURATION — config/eval.yaml
+#
+# Contains:
+#   1. Judge prompt templates for all 4 metrics
+#   2. Per-metric scoring rubrics and configuration
+#   3. Output schema specification for structured judge responses
+#   4. Prompt versioning for reproducible eval runs
+#   5. Aggregation and reporting configuration
+#
+# Design principles:
+#   - Prompts live here, NEVER in src/. Business logic and prompt content
+#     are separate concerns. Tuning a prompt must not require a code change.
+#   - Every prompt version is tagged. EvalResult records store prompt_version
+#     so you can reproduce any historical score exactly.
+#   - Rubrics are explicit and granular. Vague rubrics produce inconsistent
+#     judge scores. Every integer from 1-5 has a precise definition.
+#   - Chain-of-thought (reasoning) is REQUIRED before the score field.
+#     A judge that scores before reasoning produces less reliable scores.
+#     This is empirically established in LLM-as-a-Judge literature.
+#
+# Template variable syntax: {variable_name}
+# Variables are injected by evaluation/prompts.py at runtime.
+# Available variables per metric are documented in each prompt block.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# GLOBAL JUDGE CONFIGURATION
+# -----------------------------------------------------------------------------
+judge:
+  # Scoring scale applied uniformly across all metrics
+  score_min: 1
+  score_max: 5
+
+  # The judge is always instructed to reason before scoring.
+  # This field controls the reasoning instruction style.
+  # "step_by_step"  — "Think step by step before giving your score."
+  # "chain_of_thought" — "First analyse each criterion, then score."
+  reasoning_style: "step_by_step"
+
+  # Maximum reasoning tokens per metric call.
+  # Longer reasoning = more reliable scores but higher cost.
+  # 300 tokens is sufficient for 1-5 scoring with brief justification.
+  max_reasoning_tokens: 300
+
+  # Maximum tokens for the complete judge response (reasoning + JSON)
+  max_response_tokens: 512
+
+  # If the judge response cannot be parsed as valid JSON after max_retries,
+  # this fallback score is recorded and flagged with parse_failed=true
+  # in EvalResult. Never silently drop a failed eval.
+  parse_failure_fallback_score: 1.0
+  parse_failure_flag: "JUDGE_PARSE_FAILED"
+
+  # Minimum acceptable reasoning length (characters).
+  # Responses below this threshold are flagged as low-confidence.
+  min_reasoning_length: 40
+
+  # Output format instruction appended to every prompt.
+  # Kept here so it is consistently applied and independently tunable.
+  output_format_instruction: |
+    Respond with ONLY a valid JSON object. No markdown, no code blocks,
+    no preamble, no text outside the JSON object.
+    Required format:
+    {
+      "reasoning": "<your step-by-step analysis here>",
+      "score": <integer from 1 to 5>
+    }
+
+# -----------------------------------------------------------------------------
+# PROMPT VERSIONING
+# Increment version when prompt wording changes meaningfully.
+# Patch version for whitespace/formatting-only changes.
+# Major version for rubric restructuring.
+# EvalResult.prompt_version is set to active_version at run time.
+# -----------------------------------------------------------------------------
+prompt_versioning:
+  active_version: "1.0.0"
+  changelog:
+    "1.0.0":
+      date: "2025-06"
+      changes:
+        - "Initial production prompt set"
+        - "Added explicit per-score rubric definitions for all 4 metrics"
+        - "Enforced chain-of-thought reasoning before score"
+        - "Added edge case handling instructions"
+
+# =============================================================================
+# METRIC 1 — FAITHFULNESS
+#
+# Definition:
+#   Measures whether every factual claim in the generated answer is
+#   explicitly supported by the retrieved context chunks.
+#   This is the primary hallucination detection metric.
+#
+# What it catches:
+#   - LLM adding facts not present in any retrieved chunk
+#   - LLM extrapolating beyond what the context states
+#   - LLM contradicting information in the context
+#
+# What it does NOT penalise:
+#   - Answers that are incomplete (that is Answer Relevance's job)
+#   - Answers that miss the question (also Answer Relevance)
+#   - Retrieved chunks that are irrelevant (that is Context Precision)
+#
+# Available template variables:
+#   {question}         — the original user question
+#   {answer}           — the generated answer being evaluated
+#   {context_chunks}   — numbered list of retrieved context chunks
+# =============================================================================
+metrics:
+
+  faithfulness:
+    name: "Faithfulness"
+    display_name: "Faithfulness"
+    description: >
+      Measures whether every factual claim in the answer is grounded
+      in the retrieved context. Penalises hallucination and unsupported
+      extrapolation. Does not penalise incomplete answers.
+    weight: 0.30
+    prompt_version: "1.0.0"
+
+    rubric:
+      5: >
+        Every single factual claim in the answer is directly and explicitly
+        supported by the retrieved context chunks. No statement goes beyond
+        what the context states. Zero hallucination detected.
+      4: >
+        Almost all claims are grounded in context. At most one minor claim
+        is slightly extrapolated but remains consistent with context.
+        No fabricated facts.
+      3: >
+        Most claims are grounded, but one or two statements go noticeably
+        beyond what the context supports. The core answer is correct
+        but contains unsupported elaboration.
+      2: >
+        Several claims are not supported by the context, or one significant
+        factual claim is fabricated. The answer mixes grounded and
+        ungrounded information in a way that is misleading.
+      1: >
+        The majority of the answer is unsupported by or contradicts the
+        retrieved context. The answer is largely hallucinated.
+
+    prompt: |
+      You are a rigorous factual grounding auditor. Your sole task is to
+      determine whether every claim in the ANSWER is supported by the
+      CONTEXT CHUNKS provided.
+
+      QUESTION:
+      {question}
+
+      CONTEXT CHUNKS (retrieved documents):
+      {context_chunks}
+
+      ANSWER TO EVALUATE:
+      {answer}
+
+      EVALUATION INSTRUCTIONS:
+      1. Read each sentence in the ANSWER carefully.
+      2. For each factual claim, check whether it is explicitly supported
+         by at least one of the CONTEXT CHUNKS.
+      3. A claim is "supported" only if the context directly states it
+         or makes it unambiguously inferable. Do NOT give credit for
+         claims that merely seem plausible.
+      4. A claim is "unsupported" if it adds information not present in
+         any chunk, contradicts the context, or extrapolates beyond it.
+      5. Ignore claims that are general knowledge connective tissue
+         (e.g., "According to the document...") — only evaluate
+         substantive factual claims.
+      6. If the ANSWER is empty or a refusal, score 1 with reasoning
+         "Empty or refused answer."
+
+      SCORING RUBRIC:
+      5 — Every claim is explicitly supported by context. Zero hallucination.
+      4 — At most one minor extrapolation, consistent with context.
+      3 — One or two claims go beyond context but core answer is grounded.
+      2 — Several unsupported claims, or one significant fabricated fact.
+      1 — Majority of answer is unsupported or contradicts context.
+
+      Think step by step. Identify each factual claim and its support status
+      before giving your final score.
+
+      {output_format_instruction}
+
+# =============================================================================
+# METRIC 2 — ANSWER RELEVANCE
+#
+# Definition:
+#   Measures whether the generated answer directly and completely addresses
+#   the user's question. A faithful answer that misses the question entirely
+#   still scores 1 on this metric.
+#
+# What it catches:
+#   - Answers that are technically correct but answer a different question
+#   - Answers that address only part of a multi-part question
+#   - Answers that are overly verbose and bury the actual response
+#   - Answers that give context without answering
+#
+# What it does NOT penalise:
+#   - Hallucination (Faithfulness handles this)
+#   - Factual incorrectness vs. reference (Correctness handles this)
+#   - Bad retrieval (Context Precision handles this)
+#
+# Available template variables:
+#   {question}   — the original user question
+#   {answer}     — the generated answer being evaluated
+# =============================================================================
+
+  answer_relevance:
+    name: "Answer Relevance"
+    display_name: "Answer Relevance"
+    description: >
+      Measures whether the answer directly and completely addresses the
+      question. Penalises topic drift, partial answers, and responses
+      that provide context without answering. Independent of factual
+      correctness or grounding.
+    weight: 0.25
+    prompt_version: "1.0.0"
+
+    rubric:
+      5: >
+        The answer directly, completely, and concisely addresses every
+        aspect of the question. No relevant part of the question is
+        left unanswered. No significant off-topic content.
+      4: >
+        The answer addresses the main question well. A minor aspect
+        may be incompletely covered, or there is slight but non-distracting
+        off-topic elaboration.
+      3: >
+        The answer is partially relevant. It addresses the core question
+        but misses one or more significant sub-parts, or spends considerable
+        space on tangential information.
+      2: >
+        The answer is mostly off-topic or only tangentially related to the
+        question. The user would still be left without a useful answer.
+      1: >
+        The answer does not address the question at all. It may be a
+        refusal, an empty response, or a response to a completely
+        different question.
+
+    prompt: |
+      You are an expert at evaluating whether answers directly and completely
+      address the question asked. You do not evaluate factual accuracy —
+      only relevance and completeness relative to the question.
+
+      QUESTION:
+      {question}
+
+      ANSWER TO EVALUATE:
+      {answer}
+
+      EVALUATION INSTRUCTIONS:
+      1. Carefully parse the QUESTION. Identify all parts of the question,
+         including implicit sub-questions (e.g., "What is X and why does
+         it matter?" has two parts).
+      2. Check whether the ANSWER addresses each identified part.
+      3. Check whether the ANSWER stays on-topic or introduces significant
+         irrelevant content.
+      4. Do NOT penalise for factual incorrectness — an incorrect but
+         on-topic answer scores higher than an off-topic correct statement.
+      5. Do NOT consider whether the answer is grounded in any document.
+      6. If the ANSWER is empty or a refusal, score 1.
+
+      SCORING RUBRIC:
+      5 — Directly and completely answers every part of the question.
+      4 — Answers the main question well, minor gaps or slight drift.
+      3 — Partially relevant, misses significant parts or too much drift.
+      2 — Mostly off-topic, question remains largely unanswered.
+      1 — Does not address the question at all.
+
+      Think step by step. Identify each part of the question and assess
+      whether the answer covers it before giving your final score.
+
+      {output_format_instruction}
+
+# =============================================================================
+# METRIC 3 — CONTEXT PRECISION
+#
+# Definition:
+#   Measures the signal-to-noise ratio of the retrieved context.
+#   Specifically: of the N chunks retrieved, what fraction were actually
+#   useful for generating the answer?
+#
+#   This metric evaluates RETRIEVAL QUALITY, not answer quality.
+#   A retriever that returns 8 chunks where only 1 is relevant scores
+#   poorly even if the LLM happened to ignore the noise.
+#
+# Why this matters:
+#   - Irrelevant chunks consume context window tokens (cost)
+#   - Irrelevant chunks can distract the LLM (quality)
+#   - Low precision indicates a chunking or embedding problem
+#   - High precision with low top_k is the production goal
+#
+# What it catches:
+#   - Retriever returning off-topic chunks
+#   - Chunk boundaries that split relevant content from its heading
+#   - Embedding model failing to capture semantic similarity
+#
+# Available template variables:
+#   {question}         — the original user question
+#   {answer}           — the generated answer (for reference)
+#   {context_chunks}   — numbered list of retrieved context chunks
+# =============================================================================
+
+  context_precision:
+    name: "Context Precision"
+    display_name: "Context Precision"
+    description: >
+      Measures retrieval signal-to-noise ratio. Of the retrieved context
+      chunks, what fraction contributed meaningfully to the answer?
+      Evaluates retriever quality independently of answer quality.
+    weight: 0.25
+    prompt_version: "1.0.0"
+
+    rubric:
+      5: >
+        Every retrieved chunk is directly relevant to the question and
+        contributes meaningfully to answering it. Zero noise in retrieval.
+      4: >
+        Most chunks are relevant. At most one chunk is tangentially related
+        but does not actively mislead. Retrieval is highly precise.
+      3: >
+        Roughly half the chunks are relevant and useful. The other half
+        are off-topic or only peripherally related. Noticeable noise.
+      2: >
+        Only a minority of chunks are relevant. The retrieved context is
+        dominated by noise that could confuse the answer generation.
+      1: >
+        Virtually no retrieved chunks are relevant to the question.
+        The retriever has completely failed for this query.
+
+    prompt: |
+      You are an expert at evaluating information retrieval quality.
+      Your task is to assess how precisely the retrieved context chunks
+      match the information needed to answer the question.
+
+      QUESTION:
+      {question}
+
+      GENERATED ANSWER (for reference only):
+      {answer}
+
+      RETRIEVED CONTEXT CHUNKS:
+      {context_chunks}
+
+      EVALUATION INSTRUCTIONS:
+      1. For each numbered chunk, independently determine whether it
+         contains information that is directly useful for answering
+         the QUESTION. Mark it as RELEVANT or IRRELEVANT.
+      2. A chunk is RELEVANT if it contains facts, definitions, or
+         context that a reasonable answer to this question would use.
+      3. A chunk is IRRELEVANT if it discusses a different topic, a
+         different time period, or is otherwise not useful for this question.
+      4. Do NOT evaluate whether the answer is good — only whether
+         each chunk was a useful retrieval.
+      5. Do NOT penalise for chunks that are relevant but were not
+         used in the answer. Evaluate potential usefulness, not actual use.
+      6. Count RELEVANT chunks and IRRELEVANT chunks, then score based
+         on the ratio.
+
+      SCORING RUBRIC:
+      5 — All chunks are relevant. Precision = 100%.
+      4 — Most chunks relevant, at most 1 is noise. Precision ≥ 75%.
+      3 — Roughly half relevant, half noise. Precision ≈ 50%.
+      2 — Minority relevant, majority noise. Precision < 35%.
+      1 — No chunks are relevant. Retrieval completely failed.
+
+      Think step by step. Label each chunk RELEVANT or IRRELEVANT with
+      a one-line reason before computing your final score.
+
+      {output_format_instruction}
+
+# =============================================================================
+# METRIC 4 — CORRECTNESS
+#
+# Definition:
+#   Measures semantic agreement between the generated answer and the
+#   ground truth reference answer. This is the most direct accuracy signal.
+#
+#   REQUIRES a reference answer (ground truth). If no reference is
+#   provided, this metric is skipped and flagged as NO_REFERENCE.
+#
+# What it catches:
+#   - Factually wrong answers (even if faithful to bad context)
+#   - Answers that are relevant and well-grounded but simply incorrect
+#   - Answers that capture the right idea but miss critical details
+#
+# What it does NOT penalise:
+#   - Stylistic differences from the reference
+#   - Using different but semantically equivalent wording
+#   - Including extra correct information not in the reference
+#
+# Available template variables:
+#   {question}          — the original user question
+#   {answer}            — the generated answer being evaluated
+#   {reference_answer}  — the ground truth answer from the dataset
+# =============================================================================
+
+  correctness:
+    name: "Correctness"
+    display_name: "Correctness"
+    description: >
+      Measures semantic agreement between the generated answer and the
+      ground truth reference answer. Requires a reference dataset.
+      Evaluates factual accuracy, not style or phrasing.
+    weight: 0.20
+    prompt_version: "1.0.0"
+
+    # Behaviour when no reference answer is available
+    no_reference_behaviour: "skip"     # "skip" | "score_zero"
+    no_reference_flag: "NO_REFERENCE"
+    no_reference_score: null           # null when skip, 0.0 when score_zero
+
+    rubric:
+      5: >
+        The answer is factually correct and captures all key information
+        from the reference answer. May include additional correct details.
+        No factual errors or omissions of critical information.
+      4: >
+        The answer is mostly correct. It captures the main facts but
+        misses one minor detail from the reference, or includes one
+        trivially incorrect statement that does not affect core accuracy.
+      3: >
+        The answer is partially correct. It gets the main idea right
+        but misses one or more significant facts, or contains one
+        non-trivial factual error alongside correct information.
+      2: >
+        The answer contains significant factual errors or omits critical
+        information from the reference. A user relying on this answer
+        would be meaningfully misled.
+      1: >
+        The answer is factually incorrect or completely fails to capture
+        the information in the reference answer. Contradicts the reference
+        or provides entirely wrong information.
+
+    prompt: |
+      You are a precise factual accuracy evaluator. Your task is to
+      determine how well the GENERATED ANSWER matches the REFERENCE ANSWER
+      in terms of factual correctness and completeness.
+
+      QUESTION:
+      {question}
+
+      REFERENCE ANSWER (ground truth):
+      {reference_answer}
+
+      GENERATED ANSWER TO EVALUATE:
+      {answer}
+
+      EVALUATION INSTRUCTIONS:
+      1. Identify the key factual claims in the REFERENCE ANSWER.
+         These are the facts a correct answer must contain.
+      2. For each key fact in the reference, check whether the
+         GENERATED ANSWER agrees with it, contradicts it, or omits it.
+      3. Also check whether the GENERATED ANSWER contains any factual
+         claims that directly contradict the reference.
+      4. Do NOT penalise for:
+         - Different wording or phrasing (semantic equivalence counts)
+         - Extra correct information not in the reference
+         - Stylistic differences (formal vs. casual tone)
+      5. DO penalise for:
+         - Missing key facts from the reference
+         - Direct factual contradictions with the reference
+         - Factually wrong statements even if not in the reference
+      6. If the GENERATED ANSWER is empty or a refusal, score 1.
+
+      SCORING RUBRIC:
+      5 — All key facts correct and present. No errors. Extra detail is fine.
+      4 — Mostly correct, one minor omission or trivially wrong detail.
+      3 — Core idea correct but misses significant facts or one clear error.
+      2 — Significant errors or critical omissions. Misleading overall.
+      1 — Factually wrong or completely misses the reference content.
+
+      Think step by step. List each key fact from the reference and its
+      status in the generated answer before giving your final score.
+
+      {output_format_instruction}
+
+# =============================================================================
+# COMPOSITE SCORE CONFIGURATION
+# =============================================================================
+composite_score:
+  # Formula: weighted_sum = Σ (metric_score × metric_weight)
+  # All weights must sum to 1.0 (enforced by MetricWeightsConfig validator)
+  formula: "weighted_sum"
+
+  # Normalised to same 1-5 scale as individual metrics
+  scale_min: 1.0
+  scale_max: 5.0
+
+  # Displayed as the primary ranking column in the comparison dashboard
+  display_label: "Composite Score"
+
+  # How to handle metrics that were skipped (e.g., Correctness with no reference)
+  # "exclude_from_weight":  recompute weights using only available metrics
+  # "score_zero":           treat missing metric as 0 (harsh)
+  missing_metric_strategy: "exclude_from_weight"
+
+# =============================================================================
+# AGGREGATION CONFIGURATION
+# Applied by comparison/aggregator.py when collapsing per-question
+# scores into per-model summary statistics.
+# =============================================================================
+aggregation:
+  # Statistics computed per metric per model across all questions
+  statistics:
+    - mean
+    - std
+    - min
+    - max
+    - median
+    - p25          # 25th percentile — reveals low tail
+    - p75          # 75th percentile — reveals high tail
+
+  # Minimum questions required for aggregation to be statistically meaningful.
+  # Runs with fewer questions are flagged with low_sample_warning=true.
+  min_questions_for_reliable_aggregation: 10
+
+  low_sample_warning_threshold: 10
+  low_sample_warning_message: >
+    This run contains fewer than 10 questions. Aggregate statistics
+    may not be reliable. Consider expanding the test dataset.
+
+# =============================================================================
+# EVAL RUN CONFIGURATION
+# Controls how EvaluationEngine.run() behaves at the job level.
+# =============================================================================
+eval_run:
+  # Maximum questions evaluated in a single run (safety cap)
+  # Prevents accidentally running 500-question datasets on free tier
+  max_questions_per_run: 100
+
+  # Whether to continue if a single question's eval fails
+  # true  — skip failed questions, record error, continue
+  # false — abort entire run on first failure
+  continue_on_question_failure: true
+
+  # Whether to run all 4 metric evaluators concurrently per question
+  # true  — fires 4 async calls simultaneously (faster, uses more RPM quota)
+  # false — runs metrics sequentially (slower, friendlier to rate limits)
+  parallel_metrics_per_question: true
+
+  # Delay between questions (seconds) to respect free tier rate limits
+  # Set to 0.0 to disable. Recommended: 1.0-2.0 on Gemini free tier.
+  inter_question_delay_seconds: 1.0
+
+  # Whether to save intermediate results to SQLite after each question
+  # Allows partial result recovery if a run is interrupted
+  checkpoint_after_each_question: true
+
+# =============================================================================
+# REPORT CONFIGURATION
+# Controls what is included in exported reports (CSV, PDF).
+# =============================================================================
+report:
+  # Columns included in the per-question CSV export
+  csv_columns:
+    - question
+    - reference_answer
+    - generated_answer
+    - retrieved_chunks_count
+    - faithfulness_score
+    - faithfulness_reasoning
+    - answer_relevance_score
+    - answer_relevance_reasoning
+    - context_precision_score
+    - context_precision_reasoning
+    - correctness_score
+    - correctness_reasoning
+    - composite_score
+    - latency_ms
+    - input_tokens
+    - output_tokens
+    - estimated_cost_usd
+    - parse_failed
+    - low_confidence
+
+  # Columns in the per-model summary CSV
+  summary_csv_columns:
+    - model_id
+    - display_name
+    - n_questions
+    - faithfulness_mean
+    - faithfulness_std
+    - answer_relevance_mean
+    - answer_relevance_std
+    - context_precision_mean
+    - context_precision_std
+    - correctness_mean
+    - correctness_std
+    - composite_mean
+    - composite_std
+    - avg_latency_ms
+    - total_input_tokens
+    - total_output_tokens
+    - total_cost_usd
+
+  # Sections included in the PDF report
+  pdf_sections:
+    - executive_summary         # One-paragraph plain-English summary
+    - model_comparison_table    # Full 8-column comparison matrix
+    - radar_chart               # Plotly radar as embedded image
+    - metric_breakdown          # One section per metric with bar chart
+    - cost_analysis             # Cost table with free-tier annotations
+    - per_question_drilldown    # Full table with reasoning (truncated)
+    - methodology               # What each metric measures + prompt version

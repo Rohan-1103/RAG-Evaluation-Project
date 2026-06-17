@@ -1,0 +1,461 @@
+# =============================================================================
+# MODEL REGISTRY — config/models.yaml
+#
+# Single source of truth for every LLM the system can use.
+# Loaded once at startup by config/settings.py — never hardcoded in src/.
+#
+# Schema per model entry:
+#   id:               Internal identifier used in code + database records
+#   display_name:     Human-readable label shown in the Streamlit dashboard
+#   provider:         API provider key (maps to an API client class in src/)
+#   model_name:       Exact string passed to the provider SDK
+#   context_window:   Max tokens the model can receive (input + output combined)
+#   max_output_tokens: Hard cap on generated tokens per call
+#   cost_input_per_1k:  USD per 1,000 INPUT tokens  (0.0 = free tier / unknown)
+#   cost_output_per_1k: USD per 1,000 OUTPUT tokens (0.0 = free tier / unknown)
+#   supports_system_prompt: Whether the model honours a system role message
+#   supports_json_mode:     Whether the model can be forced to output valid JSON
+#   recommended_for:  List of use cases this model is suited for
+#   rate_limit_rpm:   Requests per minute on free tier (0 = unknown / unlimited)
+#   rate_limit_tpm:   Tokens per minute on free tier  (0 = unknown / unlimited)
+#   enabled:          Set false to hide from UI without deleting the entry
+#   tags:             Arbitrary labels for UI filtering
+#
+# Cost data sourced from official provider pricing pages.
+# Last updated: 2025-06. Verify before production billing estimation.
+# Free-tier models show 0.0 — treat as "no known billed cost at current usage."
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# GOOGLE GEMINI — Primary provider (free tier available)
+# -----------------------------------------------------------------------------
+providers:
+  google:
+    display_name: "Google Gemini"
+    base_url: "https://generativelanguage.googleapis.com"
+    env_key: "GEMINI_API_KEY"
+    client_class: "src.rag.clients.GeminiClient"
+
+  openai:
+    display_name: "OpenAI"
+    base_url: "https://api.openai.com/v1"
+    env_key: "OPENAI_API_KEY"
+    client_class: "src.rag.clients.OpenAIClient"
+
+  anthropic:
+    display_name: "Anthropic"
+    base_url: "https://api.anthropic.com"
+    env_key: "ANTHROPIC_API_KEY"
+    client_class: "src.rag.clients.AnthropicClient"
+
+  groq:
+    display_name: "Groq"
+    base_url: "https://api.groq.com/openai/v1"
+    env_key: "GROQ_API_KEY"
+    client_class: "src.rag.clients.GroqClient"
+
+# -----------------------------------------------------------------------------
+# MODEL CATALOGUE
+# Ordered by: provider → capability tier (pro → standard → lite/flash)
+# -----------------------------------------------------------------------------
+models:
+
+  # ---------------------------------------------------------------------------
+  # GOOGLE GEMINI
+  # ---------------------------------------------------------------------------
+
+  - id: gemini-1.5-pro
+    display_name: "Gemini 1.5 Pro"
+    provider: google
+    model_name: "gemini-1.5-pro"
+    context_window: 2097152          # 2M token context — largest available
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.00125       # USD — prompts up to 128k tokens
+    cost_output_per_1k: 0.00500
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - judge                        # PRIMARY judge model — strongest reasoning
+      - rag_pipeline
+      - dataset_generation
+    rate_limit_rpm: 2                # Free tier is very restrictive
+    rate_limit_tpm: 32000
+    enabled: true
+    tags:
+      - gemini
+      - google
+      - pro
+      - long-context
+      - recommended-judge
+
+  - id: gemini-1.5-flash
+    display_name: "Gemini 1.5 Flash"
+    provider: google
+    model_name: "gemini-1.5-flash"
+    context_window: 1048576          # 1M token context
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.000075      # Significantly cheaper than Pro
+    cost_output_per_1k: 0.000300
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline                 # PRIMARY RAG model — fast + cheap
+      - dataset_generation           # Good quality at low cost
+    rate_limit_rpm: 15               # Free tier — 15 RPM
+    rate_limit_tpm: 1000000
+    enabled: true
+    tags:
+      - gemini
+      - google
+      - flash
+      - fast
+      - low-cost
+      - recommended-rag
+
+  - id: gemini-1.5-flash-8b
+    display_name: "Gemini 1.5 Flash 8B"
+    provider: google
+    model_name: "gemini-1.5-flash-8b"
+    context_window: 1048576
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.0000375     # Half the cost of Flash
+    cost_output_per_1k: 0.000150
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline                 # Baseline: cheapest Gemini model
+      - dataset_generation
+    rate_limit_rpm: 15
+    rate_limit_tpm: 1000000
+    enabled: true
+    tags:
+      - gemini
+      - google
+      - flash
+      - ultra-low-cost
+      - baseline
+
+  - id: gemini-1.0-pro
+    display_name: "Gemini 1.0 Pro"
+    provider: google
+    model_name: "gemini-1.0-pro"
+    context_window: 32760
+    max_output_tokens: 2048
+    cost_input_per_1k: 0.000500
+    cost_output_per_1k: 0.001500
+    supports_system_prompt: false    # 1.0 does not support system role
+    supports_json_mode: false
+    recommended_for:
+      - rag_pipeline                 # Legacy comparison baseline
+    rate_limit_rpm: 60
+    rate_limit_tpm: 60000
+    enabled: true
+    tags:
+      - gemini
+      - google
+      - legacy
+      - comparison-baseline
+
+  # ---------------------------------------------------------------------------
+  # OPENAI  (optional — requires OPENAI_API_KEY)
+  # ---------------------------------------------------------------------------
+
+  - id: gpt-4o
+    display_name: "GPT-4o"
+    provider: openai
+    model_name: "gpt-4o"
+    context_window: 128000
+    max_output_tokens: 16384
+    cost_input_per_1k: 0.00500
+    cost_output_per_1k: 0.01500
+    supports_system_prompt: true
+    supports_json_mode: true         # response_format={"type":"json_object"}
+    recommended_for:
+      - judge                        # Strong alternative judge
+      - rag_pipeline
+    rate_limit_rpm: 500
+    rate_limit_tpm: 30000
+    enabled: false                   # Disabled by default — requires paid key
+    tags:
+      - openai
+      - gpt4
+      - flagship
+      - optional
+
+  - id: gpt-4o-mini
+    display_name: "GPT-4o Mini"
+    provider: openai
+    model_name: "gpt-4o-mini"
+    context_window: 128000
+    max_output_tokens: 16384
+    cost_input_per_1k: 0.000150
+    cost_output_per_1k: 0.000600
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline
+      - dataset_generation
+    rate_limit_rpm: 500
+    rate_limit_tpm: 200000
+    enabled: false
+    tags:
+      - openai
+      - gpt4
+      - mini
+      - low-cost
+      - optional
+
+  - id: gpt-3.5-turbo
+    display_name: "GPT-3.5 Turbo"
+    provider: openai
+    model_name: "gpt-3.5-turbo"
+    context_window: 16385
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.000500
+    cost_output_per_1k: 0.001500
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline                 # Legacy baseline comparison
+    rate_limit_rpm: 500
+    rate_limit_tpm: 60000
+    enabled: false
+    tags:
+      - openai
+      - legacy
+      - comparison-baseline
+      - optional
+
+  # ---------------------------------------------------------------------------
+  # ANTHROPIC  (optional — requires ANTHROPIC_API_KEY)
+  # ---------------------------------------------------------------------------
+
+  - id: claude-3-5-sonnet
+    display_name: "Claude 3.5 Sonnet"
+    provider: anthropic
+    model_name: "claude-3-5-sonnet-20241022"
+    context_window: 200000
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.00300
+    cost_output_per_1k: 0.01500
+    supports_system_prompt: true
+    supports_json_mode: true         # Via tool_use or prefill technique
+    recommended_for:
+      - judge
+      - rag_pipeline
+    rate_limit_rpm: 50
+    rate_limit_tpm: 40000
+    enabled: false
+    tags:
+      - anthropic
+      - claude
+      - sonnet
+      - optional
+
+  - id: claude-3-haiku
+    display_name: "Claude 3 Haiku"
+    provider: anthropic
+    model_name: "claude-3-haiku-20240307"
+    context_window: 200000
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.000250
+    cost_output_per_1k: 0.001250
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline
+      - dataset_generation
+    rate_limit_rpm: 50
+    rate_limit_tpm: 50000
+    enabled: false
+    tags:
+      - anthropic
+      - claude
+      - haiku
+      - low-cost
+      - optional
+
+  # ---------------------------------------------------------------------------
+  # GROQ  (optional — free tier, extremely fast inference)
+  # ---------------------------------------------------------------------------
+
+  - id: llama-3.1-70b-versatile
+    display_name: "Llama 3.1 70B (Groq)"
+    provider: groq
+    model_name: "llama-3.1-70b-versatile"
+    context_window: 131072
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.000590
+    cost_output_per_1k: 0.000790
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline
+    rate_limit_rpm: 30
+    rate_limit_tpm: 131072           # Free tier
+    enabled: false
+    tags:
+      - groq
+      - llama
+      - meta
+      - fast-inference
+      - optional
+
+  - id: llama-3.1-8b-instant
+    display_name: "Llama 3.1 8B Instant (Groq)"
+    provider: groq
+    model_name: "llama-3.1-8b-instant"
+    context_window: 131072
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.000050
+    cost_output_per_1k: 0.000080
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline                 # Ultra-fast baseline — sub-100ms
+    rate_limit_rpm: 30
+    rate_limit_tpm: 131072
+    enabled: false
+    tags:
+      - groq
+      - llama
+      - meta
+      - ultra-fast
+      - ultra-low-cost
+      - optional
+
+  - id: mixtral-8x7b-32768
+    display_name: "Mixtral 8x7B (Groq)"
+    provider: groq
+    model_name: "mixtral-8x7b-32768"
+    context_window: 32768
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.000270
+    cost_output_per_1k: 0.000270
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline
+    rate_limit_rpm: 30
+    rate_limit_tpm: 5000
+    enabled: false
+    tags:
+      - groq
+      - mistral
+      - moe
+      - optional
+
+# -----------------------------------------------------------------------------
+# DEFAULT MODEL ASSIGNMENTS
+# These keys are read by Settings to resolve role → model_id at startup.
+# All values must match an `id` field above where `enabled: true`.
+# -----------------------------------------------------------------------------
+defaults:
+  # The LLM that answers questions in the RAG pipeline during eval runs
+  rag_model: gemini-1.5-flash
+
+  # The LLM that judges/scores RAG outputs — use strongest available
+  judge_model: gemini-1.5-pro
+
+  # The LLM that generates synthetic Q&A pairs from document chunks
+  dataset_gen_model: gemini-1.5-flash
+
+  # Models included in the default comparison matrix when user clicks
+  # "Run Comparison" without manually selecting models
+  default_comparison_models:
+    - gemini-1.5-flash
+    - gemini-1.5-flash-8b
+    - gemini-1.0-pro
+
+# -----------------------------------------------------------------------------
+# COMPARISON MATRIX PARAMETERS
+# Default parameter grid used in multi-model comparison runs.
+# Each combination of (model × temperature × top_k) is one run config.
+# Total runs = len(models) × len(temperatures) × len(top_k_values)
+# Keep this small on free tier to avoid rate limit exhaustion.
+# -----------------------------------------------------------------------------
+comparison_grid:
+  temperatures:
+    - 0.0     # Deterministic — establishes a reproducible baseline
+    - 0.3     # Low creativity — good for factual RAG
+    - 0.7     # Moderate creativity — tests response variance
+
+  top_k_values:
+    - 3       # Tight retrieval — forces precision
+    - 5       # Standard retrieval — balanced
+    - 8       # Broad retrieval — tests context precision metric
+
+  # Run only the default comparison models unless overridden in UI
+  restrict_grid_to_default_models: true
+
+  # Maximum total runs in a single comparison job (safety cap)
+  # Prevents accidentally queuing 50+ runs on free tier
+  max_total_runs: 12
+
+# -----------------------------------------------------------------------------
+# COST ESTIMATION HELPERS
+# Used by the dashboard cost table to estimate run cost before execution.
+# Assumptions are conservative — real costs may be lower.
+# -----------------------------------------------------------------------------
+cost_estimation:
+  # Assumed average tokens per RAG response (input + output combined)
+  avg_tokens_per_rag_call: 1500
+
+  # Assumed average tokens per judge evaluation call (all 4 metrics combined)
+  avg_tokens_per_eval_call: 2000
+
+  # Assumed average tokens per dataset generation call
+  avg_tokens_per_gen_call: 800
+
+  # Safety multiplier applied to all estimates (accounts for retries + overhead)
+  safety_multiplier: 1.25
+
+# -----------------------------------------------------------------------------
+# UI DISPLAY CONFIGURATION
+# Controls how models appear in the Streamlit dashboard.
+# -----------------------------------------------------------------------------
+ui:
+  # Tag filter chips shown at top of model selector
+  filter_tags:
+    - gemini
+    - openai
+    - anthropic
+    - groq
+    - low-cost
+    - fast
+    - recommended-judge
+    - recommended-rag
+
+  # Radar chart axis order (must match MetricWeightsConfig field names)
+  radar_axes:
+    - faithfulness
+    - answer_relevance
+    - context_precision
+    - correctness
+
+  # Colour palette per provider — used in all Plotly charts
+  provider_colors:
+    google: "#4285F4"
+    openai: "#10A37F"
+    anthropic: "#D97706"
+    groq: "#7C3AED"
+    unknown: "#6B7280"
+
+  # Score band thresholds — used for traffic-light colouring in tables
+  score_bands:
+    excellent:
+      min: 4.5
+      max: 5.0
+      color: "#16A34A"   # green
+    good:
+      min: 3.5
+      max: 4.5
+      color: "#65A30D"   # lime
+    acceptable:
+      min: 2.5
+      max: 3.5
+      color: "#D97706"   # amber
+    poor:
+      min: 1.0
+      max: 2.5
+      color: "#DC2626"   # red
