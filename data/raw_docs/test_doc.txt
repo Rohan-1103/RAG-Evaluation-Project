@@ -1,0 +1,10 @@
+
+RAG Evaluation Benchmarking Tool
+
+This tool evaluates Retrieval-Augmented Generation pipelines using
+LLM-as-a-Judge methodology. It supports four evaluation metrics:
+faithfulness, answer relevance, context precision, and correctness.
+
+The system uses Google Gemini as both the RAG model and the evaluation
+judge. ChromaDB is used as the vector store for document storage.
+All-MiniLM-L6-v2 is the default embedding model.
