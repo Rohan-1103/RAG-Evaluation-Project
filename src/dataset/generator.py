@@ -223,19 +223,28 @@ class GeminiDatasetGenerator(BaseDatasetGenerator):
         at startup than mid-generation on chunk 47.
         """
         try:
-            import google.generativeai as genai
+            # import google.generativeai as genai
 
-            genai.configure(api_key=self._api_key)
+            # genai.configure(api_key=self._api_key)
 
-            generation_config = genai.GenerationConfig(
+            # generation_config = genai.GenerationConfig(
+            #     temperature=self._config.temperature,
+            #     max_output_tokens=2048,
+            #     response_mime_type="text/plain",
+            # )
+
+            # self._model = genai.GenerativeModel(
+            #     model_name=self._dataset_gen_config.model,
+            #     generation_config=generation_config,
+            # )
+            # NEW
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=self._api_key)
+            self._model = client
+            self._gen_config = types.GenerateContentConfig(
                 temperature=self._config.temperature,
                 max_output_tokens=2048,
-                response_mime_type="text/plain",
-            )
-
-            self._model = genai.GenerativeModel(
-                model_name=self._dataset_gen_config.model,
-                generation_config=generation_config,
             )
 
             logger.info(
@@ -376,70 +385,107 @@ class GeminiDatasetGenerator(BaseDatasetGenerator):
     # Gemini API call
     # ------------------------------------------------------------------
 
+    # @retry(
+    #     retry=retry_if_exception_type((Exception,)),
+    #     stop=stop_after_attempt(3),
+    #     wait=wait_exponential(multiplier=2, min=2, max=30),
+    #     reraise=True,
+    # )
+    # def _call_gemini_api(
+    #     self,
+    #     prompt: str,
+    # ) -> tuple[str, int, int]:
+    #     """
+    #     Make a single Gemini API call with tenacity retry.
+
+    #     Returns (response_text, input_tokens, output_tokens).
+
+    #     The @retry decorator handles:
+    #       - 429 rate limit errors (waits exponentially: 2s, 4s, 8s...)
+    #       - 503 service unavailable
+    #       - Network timeouts
+
+    #     Raises on all other errors (reraise=True).
+    #     """
+    #     if self._model is None:
+    #         raise RuntimeError(
+    #             "Gemini model not initialised. "
+    #             "Call _initialise_model() first."
+    #         )
+
+    #     response = self._model.generate_content(prompt)
+
+    #     # Extract token counts from usage metadata
+    #     input_tokens = 0
+    #     output_tokens = 0
+    #     if hasattr(response, "usage_metadata") and response.usage_metadata:
+    #         input_tokens = getattr(
+    #             response.usage_metadata, "prompt_token_count", 0
+    #         ) or 0
+    #         output_tokens = getattr(
+    #             response.usage_metadata, "candidates_token_count", 0
+    #         ) or 0
+
+    #     # Extract text content
+    #     text = ""
+    #     if response.candidates:
+    #         candidate = response.candidates[0]
+    #         if candidate.content and candidate.content.parts:
+    #             text = "".join(
+    #                 part.text
+    #                 for part in candidate.content.parts
+    #                 if hasattr(part, "text")
+    #             )
+
+    #     if not text.strip():
+    #         raise ChunkGenerationError(
+    #             chunk_index=0,
+    #             source_file="unknown",
+    #             reason=(
+    #                 "Gemini returned empty response. "
+    #                 "This may indicate a safety filter block or "
+    #                 "a content policy rejection."
+    #             ),
+    #         )
+
+    #     return text, input_tokens, output_tokens
+    
     @retry(
-        retry=retry_if_exception_type((Exception,)),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=2, max=30),
-        reraise=True,
-    )
-    def _call_gemini_api(
-        self,
-        prompt: str,
-    ) -> tuple[str, int, int]:
+    retry=retry_if_exception_type(Exception),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=2, min=4, max=60),
+    reraise=True,
+)
+    def _call_gemini_api(self, prompt: str) -> tuple[str, int, int]:
         """
         Make a single Gemini API call with tenacity retry.
 
         Returns (response_text, input_tokens, output_tokens).
-
         The @retry decorator handles:
           - 429 rate limit errors (waits exponentially: 2s, 4s, 8s...)
           - 503 service unavailable
           - Network timeouts
-
         Raises on all other errors (reraise=True).
         """
-        if self._model is None:
-            raise RuntimeError(
-                "Gemini model not initialised. "
-                "Call _initialise_model() first."
-            )
-
-        response = self._model.generate_content(prompt)
-
-        # Extract token counts from usage metadata
+        response = self._model.models.generate_content(
+            model=self._dataset_gen_config.model,
+            contents=prompt,
+            config=self._gen_config,
+        )
         input_tokens = 0
         output_tokens = 0
-        if hasattr(response, "usage_metadata") and response.usage_metadata:
-            input_tokens = getattr(
-                response.usage_metadata, "prompt_token_count", 0
-            ) or 0
-            output_tokens = getattr(
-                response.usage_metadata, "candidates_token_count", 0
-            ) or 0
-
-        # Extract text content
-        text = ""
-        if response.candidates:
-            candidate = response.candidates[0]
-            if candidate.content and candidate.content.parts:
-                text = "".join(
-                    part.text
-                    for part in candidate.content.parts
-                    if hasattr(part, "text")
-                )
-
+        if response.usage_metadata:
+            input_tokens = response.usage_metadata.prompt_token_count or 0
+            output_tokens = response.usage_metadata.candidates_token_count or 0
+        text = response.text or ""
         if not text.strip():
             raise ChunkGenerationError(
                 chunk_index=0,
                 source_file="unknown",
-                reason=(
-                    "Gemini returned empty response. "
-                    "This may indicate a safety filter block or "
-                    "a content policy rejection."
-                ),
+                reason="Gemini returned empty response.",
             )
-
         return text, input_tokens, output_tokens
+    
 
     # ------------------------------------------------------------------
     # Prompt construction

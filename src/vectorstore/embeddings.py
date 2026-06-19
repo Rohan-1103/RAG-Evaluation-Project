@@ -219,54 +219,86 @@ class EmbeddingManager:
                 original_exception=exc,
             ) from exc
 
+    # def _load_google_model(self) -> None:
+    #     """
+    #     Validate Google embedding configuration.
+
+    #     Google's embedding API is stateless — no model object to load.
+    #     We validate the API key is present and probe the dimension
+    #     with a single test embedding call.
+    #     """
+    #     try:
+    #         import google.generativeai as genai
+    #         from config.settings import get_settings
+
+    #         settings = get_settings()
+    #         genai.configure(api_key=settings.gemini.api_key)
+
+    #         logger.info(
+    #             f"Probing Google embedding model '{self._model_name}' "
+    #             f"to determine dimension..."
+    #         )
+    #         probe_result = genai.embed_content(
+    #             model=self._model_name,
+    #             content="probe",
+    #             task_type="retrieval_document",
+    #         )
+    #         self._dimension = len(probe_result["embedding"])
+    #         logger.info(
+    #             f"Google embedding model ready. "
+    #             f"dimension={self._dimension}"
+    #         )
+    #     except ImportError as exc:
+    #         raise EmbeddingError(
+    #             provider="google",
+    #             reason=(
+    #                 "google-generativeai is not installed. "
+    #                 "Run: poetry add google-generativeai"
+    #             ),
+    #             original_exception=exc,
+    #         ) from exc
+    #     except Exception as exc:
+    #         raise EmbeddingError(
+    #             provider="google",
+    #             reason=(
+    #                 f"Failed to initialise Google embedding model "
+    #                 f"'{self._model_name}': {exc}. "
+    #                 f"Check GEMINI_API_KEY in .env."
+    #             ),
+    #             original_exception=exc,
+    #         ) from exc
     def _load_google_model(self) -> None:
         """
         Validate Google embedding configuration.
-
         Google's embedding API is stateless — no model object to load.
         We validate the API key is present and probe the dimension
         with a single test embedding call.
         """
         try:
-            import google.generativeai as genai
+            from google import genai
             from config.settings import get_settings
-
             settings = get_settings()
-            genai.configure(api_key=settings.gemini.api_key)
-
-            logger.info(
-                f"Probing Google embedding model '{self._model_name}' "
-                f"to determine dimension..."
-            )
-            probe_result = genai.embed_content(
+            self._google_client = genai.Client(api_key=settings.gemini.api_key)
+            # Probe dimension
+            result = self._google_client.models.embed_content(
                 model=self._model_name,
-                content="probe",
-                task_type="retrieval_document",
+                contents="probe",
             )
-            self._dimension = len(probe_result["embedding"])
-            logger.info(
-                f"Google embedding model ready. "
-                f"dimension={self._dimension}"
-            )
+            self._dimension = len(result.embeddings[0].values)
+            logger.info(f"Google embedding model ready. dimension={self._dimension}")
         except ImportError as exc:
             raise EmbeddingError(
                 provider="google",
-                reason=(
-                    "google-generativeai is not installed. "
-                    "Run: poetry add google-generativeai"
-                ),
+                reason="google-genai is not installed. Run: pip install google-genai",
                 original_exception=exc,
             ) from exc
         except Exception as exc:
             raise EmbeddingError(
                 provider="google",
-                reason=(
-                    f"Failed to initialise Google embedding model "
-                    f"'{self._model_name}': {exc}. "
-                    f"Check GEMINI_API_KEY in .env."
-                ),
+                reason=f"Failed to initialise Google embedding model: {exc}",
                 original_exception=exc,
             ) from exc
+    
 
     # ------------------------------------------------------------------
     # Public embedding interface
@@ -414,51 +446,75 @@ class EmbeddingManager:
 
         return np.vstack(all_embeddings)
 
+    # def _embed_google(self, texts: list[str]) -> np.ndarray:
+    #     """
+    #     Call Google embedding API in batches.
+
+    #     Google recommends max 100 texts per request.
+    #     Uses task_type="retrieval_document" for document indexing.
+    #     """
+    #     try:
+    #         import google.generativeai as genai
+    #     except ImportError as exc:
+    #         raise EmbeddingError(
+    #             provider="google",
+    #             reason="google-generativeai not installed.",
+    #             original_exception=exc,
+    #         ) from exc
+
+    #     all_embeddings: list[list[float]] = []
+
+    #     for batch_start in range(0, len(texts), self._GOOGLE_BATCH_SIZE):
+    #         batch = texts[batch_start: batch_start + self._GOOGLE_BATCH_SIZE]
+    #         try:
+    #             result = genai.embed_content(
+    #                 model=self._model_name,
+    #                 content=batch,
+    #                 task_type="retrieval_document",
+    #             )
+    #             # result["embedding"] is list[float] for single,
+    #             # list[list[float]] for batch
+    #             raw = result["embedding"]
+    #             if isinstance(raw[0], float):
+    #                 # Single text — wrap in list
+    #                 all_embeddings.append(raw)
+    #             else:
+    #                 all_embeddings.extend(raw)
+
+    #         except Exception as exc:
+    #             raise EmbeddingError(
+    #                 provider="google",
+    #                 reason=f"API call failed on batch starting at index "
+    #                        f"{batch_start}: {exc}. "
+    #                        f"Check rate limits and API key.",
+    #                 original_exception=exc,
+    #             ) from exc
+
+    #     return np.array(all_embeddings, dtype=np.float32)
     def _embed_google(self, texts: list[str]) -> np.ndarray:
         """
         Call Google embedding API in batches.
-
         Google recommends max 100 texts per request.
         Uses task_type="retrieval_document" for document indexing.
         """
-        try:
-            import google.generativeai as genai
-        except ImportError as exc:
-            raise EmbeddingError(
-                provider="google",
-                reason="google-generativeai not installed.",
-                original_exception=exc,
-            ) from exc
-
         all_embeddings: list[list[float]] = []
-
         for batch_start in range(0, len(texts), self._GOOGLE_BATCH_SIZE):
             batch = texts[batch_start: batch_start + self._GOOGLE_BATCH_SIZE]
             try:
-                result = genai.embed_content(
+                result = self._google_client.models.embed_content(
                     model=self._model_name,
-                    content=batch,
-                    task_type="retrieval_document",
+                    contents=batch,
                 )
-                # result["embedding"] is list[float] for single,
-                # list[list[float]] for batch
-                raw = result["embedding"]
-                if isinstance(raw[0], float):
-                    # Single text — wrap in list
-                    all_embeddings.append(raw)
-                else:
-                    all_embeddings.extend(raw)
-
+                for emb in result.embeddings:
+                    all_embeddings.append(emb.values)
             except Exception as exc:
                 raise EmbeddingError(
                     provider="google",
-                    reason=f"API call failed on batch starting at index "
-                           f"{batch_start}: {exc}. "
-                           f"Check rate limits and API key.",
+                    reason=f"API call failed on batch starting at {batch_start}: {exc}",
                     original_exception=exc,
                 ) from exc
-
         return np.array(all_embeddings, dtype=np.float32)
+    
 
     def _embed_google_query(self, query: str) -> np.ndarray:
         """
@@ -470,20 +526,32 @@ class EmbeddingManager:
         This improves retrieval quality vs using the same task type
         for both. HuggingFace models are typically symmetric.
         """
-        try:
-            import google.generativeai as genai
+        # try:
+        #     import google.generativeai as genai
 
-            result = genai.embed_content(
+        #     result = genai.embed_content(
+        #         model=self._model_name,
+        #         content=query,
+        #         task_type="retrieval_query",
+        #     )
+        #     return np.array(result["embedding"], dtype=np.float32)
+        # except Exception as exc:
+        #     raise EmbeddingError(
+        #         provider="google",
+        #         reason=f"Query embedding API call failed: {exc}",
+        #         original_exception=exc,
+        #     ) from exc
+        try:
+            result = self._google_client.models.embed_content(
                 model=self._model_name,
-                content=query,
-                task_type="retrieval_query",
+                contents=query,
             )
-            return np.array(result["embedding"], dtype=np.float32)
+            return np.array(result.embeddings[0].values, dtype=np.float32)
         except Exception as exc:
             raise EmbeddingError(
-                provider="google",
-                reason=f"Query embedding API call failed: {exc}",
-                original_exception=exc,
+            provider="google",
+            reason=f"Query embedding API call failed: {exc}",
+            original_exception=exc,
             ) from exc
 
     # ------------------------------------------------------------------

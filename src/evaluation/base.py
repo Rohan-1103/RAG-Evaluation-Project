@@ -302,42 +302,69 @@ class BaseEvaluator(ABC):
     # Model initialisation
     # ------------------------------------------------------------------
 
+    # def _initialise_model(self) -> None:
+    #     """
+    #     Configure Gemini client and create the judge model instance.
+
+    #     Called once at construction. Judge temperature is always 0.0
+    #     for deterministic, reproducible scoring — the JudgeConfig
+    #     validator enforces this but we log a warning if it's not 0.
+    #     """
+    #     try:
+    #         import google.generativeai as genai
+
+    #         genai.configure(api_key=self._api_key)
+
+    #         if self._judge_config.temperature != 0.0:
+    #             logger.warning(
+    #                 f"{self.__class__.__name__}: "
+    #                 f"judge temperature={self._judge_config.temperature} "
+    #                 f"(non-zero). Judge evaluations should use "
+    #                 f"temperature=0.0 for reproducibility."
+    #             )
+
+    #         generation_config = genai.GenerationConfig(
+    #             temperature=self._judge_config.temperature,
+    #             max_output_tokens=self._eval_config.judge.max_response_tokens,
+    #             response_mime_type="text/plain",
+    #         )
+
+    #         self._model = genai.GenerativeModel(
+    #             model_name=self._judge_config.model,
+    #             generation_config=generation_config,
+    #         )
+
+    #     except ImportError as exc:
+    #         raise ImportError(
+    #             "google-generativeai is not installed. "
+    #             "Run: poetry add google-generativeai"
+    #         ) from exc
+    #     except Exception as exc:
+    #         raise RuntimeError(
+    #             f"{self.__class__.__name__}: Failed to initialise "
+    #             f"judge model '{self._judge_config.model}': {exc}"
+    #         ) from exc
+    
     def _initialise_model(self) -> None:
         """
-        Configure Gemini client and create the judge model instance.
+            Configure Gemini client and create the judge model instance.
 
-        Called once at construction. Judge temperature is always 0.0
-        for deterministic, reproducible scoring — the JudgeConfig
-        validator enforces this but we log a warning if it's not 0.
-        """
+            Called once at construction. Judge temperature is always 0.0
+            for deterministic, reproducible scoring — the JudgeConfig
+            validator enforces this but we log a warning if it's not 0.
+            """
         try:
-            import google.generativeai as genai
-
-            genai.configure(api_key=self._api_key)
-
-            if self._judge_config.temperature != 0.0:
-                logger.warning(
-                    f"{self.__class__.__name__}: "
-                    f"judge temperature={self._judge_config.temperature} "
-                    f"(non-zero). Judge evaluations should use "
-                    f"temperature=0.0 for reproducibility."
-                )
-
-            generation_config = genai.GenerationConfig(
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=self._api_key)
+            self._model = client
+            self._gen_config = types.GenerateContentConfig(
                 temperature=self._judge_config.temperature,
                 max_output_tokens=self._eval_config.judge.max_response_tokens,
-                response_mime_type="text/plain",
             )
-
-            self._model = genai.GenerativeModel(
-                model_name=self._judge_config.model,
-                generation_config=generation_config,
-            )
-
         except ImportError as exc:
             raise ImportError(
-                "google-generativeai is not installed. "
-                "Run: poetry add google-generativeai"
+                "google-genai is not installed. Run: pip install google-genai"
             ) from exc
         except Exception as exc:
             raise RuntimeError(
@@ -446,16 +473,82 @@ class BaseEvaluator(ABC):
             )
             return "", 0, 0
 
+    # @retry(
+    #     retry=retry_if_exception_type(Exception),
+    #     stop=stop_after_attempt(3),
+    #     wait=wait_exponential(multiplier=2, min=2, max=30),
+    #     reraise=True,
+    # )
+    # def _call_judge_api(
+    #     self,
+    #     prompt: str,
+    # ) -> tuple[str, int, int]:
+    #     """
+    #     Single Gemini API call with tenacity exponential backoff.
+
+    #     Retries on any exception:
+    #       - 429 rate limit (most common on free tier)
+    #       - 503 service unavailable
+    #       - Network timeout
+
+    #     Returns (response_text, input_tokens, output_tokens).
+    #     Raises on non-retriable errors (reraise=True) after 3 attempts.
+    #     """
+    #     if self._model is None:
+    #         raise RuntimeError(
+    #             f"{self.__class__.__name__}: Model not initialised."
+    #         )
+
+    #     response = self._model.generate_content(prompt)
+
+    #     # Extract token counts
+    #     input_tokens = 0
+    #     output_tokens = 0
+    #     if hasattr(response, "usage_metadata") and response.usage_metadata:
+    #         input_tokens = getattr(
+    #             response.usage_metadata, "prompt_token_count", 0
+    #         ) or 0
+    #         output_tokens = getattr(
+    #             response.usage_metadata, "candidates_token_count", 0
+    #         ) or 0
+
+    #     # Extract response text
+    #     text = ""
+    #     if response.candidates:
+    #         candidate = response.candidates[0]
+    #         if candidate.content and candidate.content.parts:
+    #             text = "".join(
+    #                 part.text
+    #                 for part in candidate.content.parts
+    #                 if hasattr(part, "text")
+    #             )
+
+    #     if not text.strip():
+    #         raise EvaluatorError(
+    #             evaluator=self.__class__.__name__,
+    #             metric=self.metric_name,
+    #             reason=(
+    #                 "Judge returned empty response. "
+    #                 "May be a safety filter block."
+    #             ),
+    #         )
+
+    #     return text, input_tokens, output_tokens
+    
     @retry(
-        retry=retry_if_exception_type(Exception),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=2, max=30),
-        reraise=True,
-    )
-    def _call_judge_api(
-        self,
-        prompt: str,
-    ) -> tuple[str, int, int]:
+    retry=retry_if_exception_type(Exception),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=2, min=2, max=30),
+    reraise=True,
+)
+    def _call_judge_api(self, prompt: str) -> tuple[str, int, int]:
+        response = self._model.models.generate_content(
+            model=self._judge_config.model,
+            contents=prompt,
+            config=self._gen_config,
+        )
+        input_tokens = 0
+        output_tokens = 0
         """
         Single Gemini API call with tenacity exponential backoff.
 
@@ -467,46 +560,18 @@ class BaseEvaluator(ABC):
         Returns (response_text, input_tokens, output_tokens).
         Raises on non-retriable errors (reraise=True) after 3 attempts.
         """
-        if self._model is None:
-            raise RuntimeError(
-                f"{self.__class__.__name__}: Model not initialised."
-            )
-
-        response = self._model.generate_content(prompt)
-
-        # Extract token counts
-        input_tokens = 0
-        output_tokens = 0
-        if hasattr(response, "usage_metadata") and response.usage_metadata:
-            input_tokens = getattr(
-                response.usage_metadata, "prompt_token_count", 0
-            ) or 0
-            output_tokens = getattr(
-                response.usage_metadata, "candidates_token_count", 0
-            ) or 0
-
-        # Extract response text
-        text = ""
-        if response.candidates:
-            candidate = response.candidates[0]
-            if candidate.content and candidate.content.parts:
-                text = "".join(
-                    part.text
-                    for part in candidate.content.parts
-                    if hasattr(part, "text")
-                )
-
+        if response.usage_metadata:
+            input_tokens = response.usage_metadata.prompt_token_count or 0
+            output_tokens = response.usage_metadata.candidates_token_count or 0
+        text = response.text or ""
         if not text.strip():
             raise EvaluatorError(
                 evaluator=self.__class__.__name__,
                 metric=self.metric_name,
-                reason=(
-                    "Judge returned empty response. "
-                    "May be a safety filter block."
-                ),
+                reason="Judge returned empty response.",
             )
-
         return text, input_tokens, output_tokens
+    
 
     # ------------------------------------------------------------------
     # Response parsing

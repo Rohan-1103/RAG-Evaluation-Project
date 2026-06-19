@@ -218,68 +218,93 @@ class RAGPipeline:
     # Gemini initialisation
     # ------------------------------------------------------------------
 
+    # def _configure_gemini(self) -> None:
+    #     """Configure Gemini API key once at pipeline construction."""
+    #     try:
+    #         import google.generativeai as genai
+    #         genai.configure(api_key=self._settings.gemini.api_key)
+    #     except ImportError as exc:
+    #         raise ImportError(
+    #             "google-generativeai is not installed. "
+    #             "Run: poetry add google-generativeai"
+    #         ) from exc
+    #     except Exception as exc:
+    #         raise RuntimeError(
+    #             f"RAGPipeline: Failed to configure Gemini API: {exc}"
+    #         ) from exc
+
+    # def _get_model(
+    #     self,
+    #     model_id: str,
+    #     temperature: float,
+    #     max_output_tokens: int,
+    # ) -> Any:
+    #     """
+    #     Get or create a Gemini GenerativeModel for a given config.
+
+    #     Models are cached by (model_id, temperature, max_output_tokens)
+    #     so the same configuration reuses the same model instance
+    #     across all pairs in a batch run.
+    #     """
+    #     cache_key = f"{model_id}|{temperature}|{max_output_tokens}"
+
+    #     if cache_key not in self._model_cache:
+    #         try:
+    #             import google.generativeai as genai
+
+    #             generation_config = genai.GenerationConfig(
+    #                 temperature=temperature,
+    #                 max_output_tokens=max_output_tokens,
+    #             )
+
+    #             self._model_cache[cache_key] = genai.GenerativeModel(
+    #                 model_name=model_id,
+    #                 generation_config=generation_config,
+    #                 system_instruction=_SYSTEM_INSTRUCTION,
+    #             )
+
+    #             logger.debug(
+    #                 f"RAGPipeline: Created model instance "
+    #                 f"'{model_id}' "
+    #                 f"(temperature={temperature}, "
+    #                 f"max_tokens={max_output_tokens})"
+    #             )
+
+    #         except Exception as exc:
+    #             raise RAGPipelineError(
+    #                 reason=(
+    #                     f"Failed to create Gemini model '{model_id}': "
+    #                     f"{exc}"
+    #                 ),
+    #                 original_exception=exc,
+    #             ) from exc
+
+    #     return self._model_cache[cache_key]
+    
     def _configure_gemini(self) -> None:
         """Configure Gemini API key once at pipeline construction."""
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=self._settings.gemini.api_key)
+            from google import genai
+            self._genai_client = genai.Client(
+                api_key=self._settings.gemini.api_key
+            )
         except ImportError as exc:
             raise ImportError(
-                "google-generativeai is not installed. "
-                "Run: poetry add google-generativeai"
-            ) from exc
-        except Exception as exc:
-            raise RuntimeError(
-                f"RAGPipeline: Failed to configure Gemini API: {exc}"
+                "google-genai is not installed. Run: pip install google-genai"
             ) from exc
 
-    def _get_model(
-        self,
-        model_id: str,
-        temperature: float,
-        max_output_tokens: int,
-    ) -> Any:
-        """
-        Get or create a Gemini GenerativeModel for a given config.
-
-        Models are cached by (model_id, temperature, max_output_tokens)
-        so the same configuration reuses the same model instance
-        across all pairs in a batch run.
-        """
+    def _get_model(self, model_id: str, temperature: float, max_output_tokens: int) -> Any:
+        """Returns (client, config) tuple cached by key."""
+        from google.genai import types
         cache_key = f"{model_id}|{temperature}|{max_output_tokens}"
-
         if cache_key not in self._model_cache:
-            try:
-                import google.generativeai as genai
-
-                generation_config = genai.GenerationConfig(
-                    temperature=temperature,
-                    max_output_tokens=max_output_tokens,
-                )
-
-                self._model_cache[cache_key] = genai.GenerativeModel(
-                    model_name=model_id,
-                    generation_config=generation_config,
-                    system_instruction=_SYSTEM_INSTRUCTION,
-                )
-
-                logger.debug(
-                    f"RAGPipeline: Created model instance "
-                    f"'{model_id}' "
-                    f"(temperature={temperature}, "
-                    f"max_tokens={max_output_tokens})"
-                )
-
-            except Exception as exc:
-                raise RAGPipelineError(
-                    reason=(
-                        f"Failed to create Gemini model '{model_id}': "
-                        f"{exc}"
-                    ),
-                    original_exception=exc,
-                ) from exc
-
-        return self._model_cache[cache_key]
+            self._model_cache[cache_key] = types.GenerateContentConfig(
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+                system_instruction=_SYSTEM_INSTRUCTION,
+            )
+            logger.debug(f"RAGPipeline: Created config for '{model_id}'")
+        return self._genai_client, self._model_cache[cache_key]
 
     # ------------------------------------------------------------------
     # Public interfaces
@@ -787,11 +812,72 @@ class RAGPipeline:
     # Generation
     # ------------------------------------------------------------------
 
+    # @retry(
+    #     retry=retry_if_exception_type(Exception),
+    #     stop=stop_after_attempt(3),
+    #     wait=wait_exponential(multiplier=2, min=2, max=30),
+    #     reraise=True,
+    # )
+    # def _call_gemini(
+    #     self,
+    #     prompt: str,
+    #     model_id: str,
+    #     temperature: float,
+    #     max_output_tokens: int,
+    # ) -> tuple[str, int, int]:
+    #     """
+    #     Make a single Gemini generation API call with retry.
+
+    #     Returns (answer_text, input_tokens, output_tokens).
+
+    #     Decorated with @retry for 429 and 503 handling.
+    #     reraise=True means the final failure propagates to _generate()
+    #     which converts it to an error response.
+    #     """
+    #     model = self._get_model(
+    #         model_id=model_id,
+    #         temperature=temperature,
+    #         max_output_tokens=max_output_tokens,
+    #     )
+
+    #     response = model.generate_content(prompt)
+
+    #     # Extract token counts
+    #     input_tokens = 0
+    #     output_tokens = 0
+    #     if (
+    #         hasattr(response, "usage_metadata")
+    #         and response.usage_metadata
+    #     ):
+    #         input_tokens = getattr(
+    #             response.usage_metadata,
+    #             "prompt_token_count",
+    #             0,
+    #         ) or 0
+    #         output_tokens = getattr(
+    #             response.usage_metadata,
+    #             "candidates_token_count",
+    #             0,
+    #         ) or 0
+
+    #     # Extract text
+    #     text = ""
+    #     if response.candidates:
+    #         candidate = response.candidates[0]
+    #         if candidate.content and candidate.content.parts:
+    #             text = "".join(
+    #                 part.text
+    #                 for part in candidate.content.parts
+    #                 if hasattr(part, "text")
+    #             )
+
+    #     return text, input_tokens, output_tokens
+    
     @retry(
-        retry=retry_if_exception_type(Exception),
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=2, max=30),
-        reraise=True,
+    retry=retry_if_exception_type(Exception),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=4, max=60),
+    reraise=True,
     )
     def _call_gemini(
         self,
@@ -801,51 +887,24 @@ class RAGPipeline:
         max_output_tokens: int,
     ) -> tuple[str, int, int]:
         """
-        Make a single Gemini generation API call with retry.
-
-        Returns (answer_text, input_tokens, output_tokens).
-
+        Make a single Gemini generation API call with retry    
+        Returns (answer_text, input_tokens, output_tokens) 
         Decorated with @retry for 429 and 503 handling.
         reraise=True means the final failure propagates to _generate()
         which converts it to an error response.
         """
-        model = self._get_model(
-            model_id=model_id,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
+        client, config = self._get_model(model_id, temperature, max_output_tokens)
+        response = client.models.generate_content(
+            model=model_id,
+            contents=prompt,
+            config=config,
         )
-
-        response = model.generate_content(prompt)
-
-        # Extract token counts
         input_tokens = 0
         output_tokens = 0
-        if (
-            hasattr(response, "usage_metadata")
-            and response.usage_metadata
-        ):
-            input_tokens = getattr(
-                response.usage_metadata,
-                "prompt_token_count",
-                0,
-            ) or 0
-            output_tokens = getattr(
-                response.usage_metadata,
-                "candidates_token_count",
-                0,
-            ) or 0
-
-        # Extract text
-        text = ""
-        if response.candidates:
-            candidate = response.candidates[0]
-            if candidate.content and candidate.content.parts:
-                text = "".join(
-                    part.text
-                    for part in candidate.content.parts
-                    if hasattr(part, "text")
-                )
-
+        if response.usage_metadata:
+            input_tokens = response.usage_metadata.prompt_token_count or 0
+            output_tokens = response.usage_metadata.candidates_token_count or 0
+        text = response.text or ""
         return text, input_tokens, output_tokens
 
     def _generate(
