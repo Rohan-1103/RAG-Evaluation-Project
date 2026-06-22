@@ -17,5 +17,81 @@
     "tags": [],
     "version": "1.0.0",
     "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVF2AT51VKXYXERZ0P064MVF"
+  },
+  "ds_01KVNTBFGN96YJK8MWZ2P8RQCJ": {
+    "id": "ds_01KVNTBFGN96YJK8MWZ2P8RQCJ",
+    "name": "Smoke Test Dataset",
+    "description": null,
+    "created_at": "2026-06-21T19:26:08.405101+00:00",
+    "updated_at": "2026-06-21T19:26:28.236811+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "smoke_test_collection",
+    "source_files": [
+      "smoke_test.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVNTBFGN96YJK8MWZ2P8RQCJ"
+  },
+  "ds_01KVPMTWAPMQ1EM9NHJYE1VPVK": {
+    "id": "ds_01KVPMTWAPMQ1EM9NHJYE1VPVK",
+    "name": "Smoke Test Dataset",
+    "description": null,
+    "created_at": "2026-06-22T03:08:56.022989+00:00",
+    "updated_at": "2026-06-22T03:09:00.897804+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "smoke_test_collection",
+    "source_files": [
+      "smoke_test.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPMTWAPMQ1EM9NHJYE1VPVK"
+  },
+  "ds_01KVPMWFTKGWW0GAJ96KZPANCD": {
+    "id": "ds_01KVPMWFTKGWW0GAJ96KZPANCD",
+    "name": "Smoke Test Dataset",
+    "description": null,
+    "created_at": "2026-06-22T03:09:48.755055+00:00",
+    "updated_at": "2026-06-22T03:09:57.359671+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "smoke_test_collection",
+    "source_files": [
+      "smoke_test.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPMWFTKGWW0GAJ96KZPANCD"
+  },
+  "ds_01KVPNF6E5K98G6JKH1E07EMAZ": {
+    "id": "ds_01KVPNF6E5K98G6JKH1E07EMAZ",
+    "name": "Smoke Test Dataset",
+    "description": null,
+    "created_at": "2026-06-22T03:20:01.733525+00:00",
+    "updated_at": "2026-06-22T03:20:06.978868+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "smoke_test_collection",
+    "source_files": [
+      "smoke_test.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPNF6E5K98G6JKH1E07EMAZ"
   }
 }

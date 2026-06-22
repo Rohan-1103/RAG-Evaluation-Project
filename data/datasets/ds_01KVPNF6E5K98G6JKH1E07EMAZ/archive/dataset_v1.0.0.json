@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "id": "ds_01KVPNF6E5K98G6JKH1E07EMAZ",
+    "name": "Smoke Test Dataset",
+    "description": null,
+    "created_at": "2026-06-22T03:20:01.733525Z",
+    "updated_at": "2026-06-22T03:20:01.735454Z",
+    "generation_method": "synthetic",
+    "source_collection": "smoke_test_collection",
+    "source_files": [
+      "smoke_test.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "status": "ready",
+    "tags": [],
+    "version": "1.0.0"
+  },
+  "pairs": [
+    {
+      "id": "qap_01KVPNF6E56DNBAMPRDE7S261Z",
+      "dataset_id": "ds_01KVPNF6E5K98G6JKH1E07EMAZ",
+      "created_at": "2026-06-22T03:20:01.733438Z",
+      "source_chunk": "RAG Evaluation Benchmarking Tool\n\nThis tool evaluates Retrieval-Augmented Generation pipelines using\nLLM-as-a-Judge methodology. It supports four evaluation metrics:\nfaithfulness, answer relevance, context precision, and correctness.\n\nThe system uses Google Gemini as both the RAG model and the evaluation\njudge. ChromaDB is used as the vector store for document storage.\nAll-MiniLM-L6-v2 is the default embedding model.",
+      "source_file": "smoke_test.txt",
+      "source_page": null,
+      "chunk_index": null,
+      "question": "Which specific components are used for the vector store and the embedding model in the RAG Evaluation Benchmarking Tool?",
+      "ground_truth_answer": "The tool uses ChromaDB as the vector store and All-MiniLM-L6-v2 as the default embedding model.",
+      "generation_method": "synthetic",
+      "generated_answer": null,
+      "retrieved_chunks": [],
+      "retrieved_chunk_sources": [],
+      "rag_latency_ms": 0.0,
+      "rag_input_tokens": 0,
+      "rag_output_tokens": 0,
+      "rag_model": null,
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "pending",
+      "error_message": null
+    }
+  ]
+}
