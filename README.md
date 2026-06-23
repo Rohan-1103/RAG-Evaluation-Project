@@ -172,7 +172,7 @@ rag-eval-bench/
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/<your-username>/rag-eval-bench.git
+git clone https://github.com/Rohan-1103/rag-eval-bench.git
 cd rag-eval-bench
 poetry install
 ```
@@ -291,4 +291,4 @@ MIT
 
 ## 🙋 Author
 
-Built by [Rohan](https://github.com/rohan-1103) as a portfolio project demonstrating production-grade RAG evaluation engineering — LangChain/LangGraph fundamentals, RAG/Vectorless RAG architecture, LLM Gateways, and rigorous evaluation methodology, applied end-to-end.
+Built by [Rohan](https://github.com/Rohan-1103) as a portfolio project demonstrating production-grade RAG evaluation engineering — LangChain/LangGraph fundamentals, RAG/Vectorless RAG architecture, LLM Gateways, and rigorous evaluation methodology, applied end-to-end.
