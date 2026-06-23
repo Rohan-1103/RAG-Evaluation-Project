@@ -28,8 +28,9 @@ Most candidates can build a RAG chatbot. Almost none can answer "how do you know
 
 ## 🖥️ Demo
 
-*(Screenshots/GIF placeholder — add after a local run)*
+*![Home Screen](image.png)*
 
+*![Run Evaluation Screen](<Screenshot 2026-06-23 233614.png>)*
 ---
 
 ## 🏗️ Architecture

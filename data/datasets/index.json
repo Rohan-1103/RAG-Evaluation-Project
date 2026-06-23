@@ -112,5 +112,24 @@
     "tags": [],
     "version": "1.0.1",
     "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVTFRFFXYBPB5A21WHFSCRAJ"
+  },
+  "ds_01KVTSAMSBV5WXHZDNEY9EBHDF": {
+    "id": "ds_01KVTSAMSBV5WXHZDNEY9EBHDF",
+    "name": "POTrack-first-pair",
+    "description": "Chunks-to-sample: 40\nPair per chunk: 2\nMax total pairs: 20\nTemperature: 0.10",
+    "created_at": "2026-06-23T17:44:24.619822+00:00",
+    "updated_at": "2026-06-23T18:00:31.520125+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "POTracker",
+    "source_files": [
+      "POTracker-resaerch.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 19,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.4",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVTSAMSBV5WXHZDNEY9EBHDF"
   }
 }
