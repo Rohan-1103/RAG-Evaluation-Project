@@ -93,5 +93,24 @@
     "tags": [],
     "version": "1.0.1",
     "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPNF6E5K98G6JKH1E07EMAZ"
+  },
+  "ds_01KVTFRFFXYBPB5A21WHFSCRAJ": {
+    "id": "ds_01KVTFRFFXYBPB5A21WHFSCRAJ",
+    "name": "OJT-Report",
+    "description": null,
+    "created_at": "2026-06-23T14:57:12.189464+00:00",
+    "updated_at": "2026-06-23T15:00:15.979478+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "test_collection3",
+    "source_files": [
+      "test_doc.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVTFRFFXYBPB5A21WHFSCRAJ"
   }
 }

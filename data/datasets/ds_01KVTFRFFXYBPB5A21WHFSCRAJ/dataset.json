@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "id": "ds_01KVTFRFFXYBPB5A21WHFSCRAJ",
+    "name": "OJT-Report",
+    "description": null,
+    "created_at": "2026-06-23T14:57:12.189464Z",
+    "updated_at": "2026-06-23T15:00:15.979478Z",
+    "generation_method": "synthetic",
+    "source_collection": "test_collection3",
+    "source_files": [
+      "test_doc.txt"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1"
+  },
+  "pairs": [
+    {
+      "id": "qap_01KVTFRFFWE3GSRAEQSW7BCRWK",
+      "dataset_id": "ds_01KVTFRFFXYBPB5A21WHFSCRAJ",
+      "created_at": "2026-06-23T14:57:12.188800Z",
+      "source_chunk": "RAG Evaluation Benchmarking Tool\n\nThis tool evaluates Retrieval-Augmented Generation pipelines using\nLLM-as-a-Judge methodology. It supports four evaluation metrics:\nfaithfulness, answer relevance, context precision, and correctness.\n\nThe system uses Google Gemini as both the RAG model and the evaluation\njudge. ChromaDB is used as the vector store for document storage.\nAll-MiniLM-L6-v2 is the default embedding model.",
+      "source_file": "test_doc.txt",
+      "source_page": null,
+      "chunk_index": null,
+      "question": "Which specific components are used for the vector store and embedding model in the RAG Evaluation Benchmarking Tool?",
+      "ground_truth_answer": "The tool uses ChromaDB as the vector store and All-MiniLM-L6-v2 as the default embedding model.",
+      "generation_method": "synthetic",
+      "generated_answer": "",
+      "retrieved_chunks": [
+        "RAG Evaluation Benchmarking Tool\n\nThis tool evaluates Retrieval-Augmented Generation pipelines using\nLLM-as-a-Judge methodology. It supports four evaluation metrics:\nfaithfulness, answer relevance, context precision, and correctness.\n\nThe system uses Google Gemini as both the RAG model and the evaluation\njudge. ChromaDB is used as the vector store for document storage.\nAll-MiniLM-L6-v2 is the default embedding model."
+      ],
+      "retrieved_chunk_sources": [
+        "test_doc.txt"
+      ],
+      "rag_latency_ms": 33206.4,
+      "rag_input_tokens": 0,
+      "rag_output_tokens": 0,
+      "rag_model": "gemini-2.0-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    }
+  ]
+}
