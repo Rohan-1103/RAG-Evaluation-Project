@@ -1,0 +1,331 @@
+{
+  "metadata": {
+    "id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+    "name": "Ask_Dont_Judge",
+    "description": "Sample: 25\nPair/Chunk: 2\nMax pairs: 10\nTemperature: 0.20",
+    "created_at": "2026-06-26T14:41:28.651775Z",
+    "updated_at": "2026-06-26T14:51:26.314860Z",
+    "generation_method": "synthetic",
+    "source_collection": "ask-dont-judge",
+    "source_files": [
+      "Ask_dont_judge.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 10,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.2"
+  },
+  "pairs": [
+    {
+      "id": "qap_01KW261V2ACJYYT12EPPS13EE9",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.650962Z",
+      "source_chunk": "Q1 Does the summary address the main topic or central event of the source article? 0.95\nQ2 Does the summary cover at least some of the key points or important details of the source article? 0.50\nQ3 Is the summary free from significant redundancy, such as repeating the same point multiple times in different\nwords?0.64\nQ4 Is the summary free from excessive trivial or unimportant details that dilute the coverage of main points? 0.72\nQ5 Does the summary prioritize the most newsworthy or significant information from the source rather than\nfocusing on minor or tangential aspects?0.49\n22",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 22,
+      "chunk_index": null,
+      "question": "What score is assigned to the criterion regarding whether the summary addresses the main topic or central event of the source article?",
+      "ground_truth_answer": "The score assigned to this criterion is 0.95.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to [Ask_dont_judge.pdf p.22], the score assigned to the criterion regarding whether the summary addresses the main topic or central event of the source article (Q1) is 0.95.",
+      "retrieved_chunks": [
+        "Q1 Does the summary address the main topic or central event of the source article? 0.95\nQ2 Does the summary cover at least some of the key points or important details of the source article? 0.50\nQ3 Is the summary free from significant redundancy, such as repeating the same point multiple times in different\nwords?0.64\nQ4 Is the summary free from excessive trivial or unimportant details that dilute the coverage of main points? 0.72\nQ5 Does the summary prioritize the most newsworthy or significant information from the source rather than\nfocusing on minor or tangential aspects?0.49\n22",
+        "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91",
+        "article)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91\nQ5 Are all numerical claims (dates, statistics, quantities, amounts) in the summary consistent with the source\narticle?0.95\nQ6 Are the causal relationships and event sequences described in the summary consistent with those in the\nsource article?0.87\nQ7 Does the summary avoid misrepresenting or distorting the meaning of information from the source article? 0.76\n21"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.22",
+        "Ask_dont_judge.pdf p.21",
+        "Ask_dont_judge.pdf p.21"
+      ],
+      "rag_latency_ms": 957.3,
+      "rag_input_tokens": 735,
+      "rag_output_tokens": 47,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BGVH6RQW2PKZXS4WW",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651139Z",
+      "source_chunk": "Q1 Does the summary address the main topic or central event of the source article? 0.95\nQ2 Does the summary cover at least some of the key points or important details of the source article? 0.50\nQ3 Is the summary free from significant redundancy, such as repeating the same point multiple times in different\nwords?0.64\nQ4 Is the summary free from excessive trivial or unimportant details that dilute the coverage of main points? 0.72\nQ5 Does the summary prioritize the most newsworthy or significant information from the source rather than\nfocusing on minor or tangential aspects?0.49\n22",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 22,
+      "chunk_index": null,
+      "question": "Which criterion received a score of 0.49 in the provided document?",
+      "ground_truth_answer": "The criterion that received a score of 0.49 is whether the summary prioritizes the most newsworthy or significant information from the source rather than focusing on minor or tangential aspects.",
+      "generation_method": "synthetic",
+      "generated_answer": "I cannot answer this question based on the provided context. The document does not contain any criterion with a score of 0.49.",
+      "retrieved_chunks": [
+        "Ask, Don’t Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement\nTable 1.Summary-level Spearmanρ/ Kendallτcorrelations on SummEval.\nMethod Coherence Consistency Fluency Relevance Average\nROUGE-1 0.167 / 0.126 0.160 / 0.130 0.115 / 0.094 0.326 / 0.252 0.192 / 0.150\nBERTScore 0.284 / 0.211 0.110 / 0.090 0.193 / 0.158 0.312 / 0.243 0.225 / 0.175\nMoverScore 0.159 / 0.118 0.157 / 0.127 0.129 / 0.105 0.318 / 0.244 0.191 / 0.148\nBARTScore 0.448 / 0.342 0.382 / 0.315 0.356 / 0.292 0.356 / 0.273 0.385 / 0.305\nUniEval (T5) 0.575 / 0.442 0.446 / 0.371 0.449 / 0.371 0.426 / 0.325 0.474 / 0.377\nG-Eval (GPT-4) 0.582 / 0.457 0.507 / 0.425 0.506 / 0.4550.547/0.4330.514 / 0.418\nG-Eval (gpt-oss) 0.451 / 0.392 0.559 / 0.527 0.217 / 0.203 0.515 / 0.446 0.436 / 0.392\nUniEval (gpt-oss) 0.237 / 0.208 0.489 / 0.476 0.000 / 0.000 0.288 / 0.256 0.254 / 0.235\nBINEVAL(gpt-oss)0.523 / 0.448 0.585 / 0.548 0.252 / 0.235 0.428 / 0.366 0.447 / 0.399",
+        "nuance: Q2 (Y, no spelling errors) and Q8 (Y, comprehensible gist) prevent a floor score. Score: 2/8→1.50 , between 1 and 2.\nG-Eval and UniEval assign the minimum because any fluency issue triggers a blanket negative judgment.\nFigure 5.Four illustrative SummEval examples, one per evaluation dimension. In each case, BinEval’s question decomposition produces\nscores closely aligned with human judgments by independently assessing multiple quality facets. Holistic methods (G-Eval, UniEval with\ngpt-oss) collapse to extreme scores on edge cases—short-but-correct summaries, partially readable text, or concise one-liners—because a\nsingle judgment conflates orthogonal quality dimensions.\n12",
+        "Ask, Don’t Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement\nis not only better correlation, but also better use of the score range: BINEVALassigns meaningfully different scores to\ndifferent kinds of factual errors instead of collapsing them into a small set of near-identical predictions.\n0.0 0.2 0.4 0.6 0.8 1.0\nHuman Score0.00.20.40.60.81.0BinEval (Claude) Scorer = 0.672QAGS-C/glyph1197/glyph1197DM -- BinEval (Claude)\n0.0 0.2 0.4 0.6 0.8 1.0\nHuman Score0.00.20.40.60.81.0UniEval (T5) Scorer = 0.682QAGS-C/glyph1197/glyph1197DM -- UniEval (T5)\n0.0 0.2 0.4 0.6 0.8 1.0\nHuman Score0.00.20.40.60.81.0G-Eval (gpt-oss) Scorer = 0.045QAGS-C/glyph1197/glyph1197DM -- G-Eval (gpt-oss)\n0.0 0.2 0.4 0.6 0.8 1.0\nHuman Score0.00.20.40.60.81.0BinEval (gpt-oss) Scorer = 0.651QAGS-C/glyph1197/glyph1197DM -- BinEval (gpt-oss)\n0.0 0.2 0.4 0.6 0.8 1.0\nHuman Score0.00.20.40.60.81.0UniEval (gpt-oss) Scorer = 0.415QAGS-C/glyph1197/glyph1197DM -- UniEval (gpt-oss)"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.5",
+        "Ask_dont_judge.pdf p.12",
+        "Ask_dont_judge.pdf p.21"
+      ],
+      "rag_latency_ms": 829.4,
+      "rag_input_tokens": 1575,
+      "rag_output_tokens": 28,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BT5WDP3PEEBGJP4S2",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651222Z",
+      "source_chunk": "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 21,
+      "chunk_index": null,
+      "question": "What is the Yes-rate for the question asking if a summary is free of hallucinated facts?",
+      "ground_truth_answer": "The Yes-rate for Q3, which asks if the summary is free of hallucinated facts, is 0.81.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to [Ask_dont_judge.pdf p.21], the Yes-rate for the question asking if a summary is free of hallucinated facts (Q3) is 0.81.",
+      "retrieved_chunks": [
+        "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91",
+        "E. Binary Questions for SummEval\nTables 9–12 list the binary questions auto-generated by BINEVALfor each SummEval evaluation dimension. These are the\nquestions referenced in Section 5.6 and Figure 3. Each question is designed so that “yes” indicates the output satisfies the\ncriterion and “no” indicates a violation.\nTable 9.Binary questions forCoherenceon SummEval (8 questions).\nID Question Yes-rate\nQ1 Does the summary have a well-defined structure (e.g., a clear beginning, middle, and/or end) rather than\nappearing randomly assembled?0.66\nQ2 Are the sentences in the summary arranged in a sensible and logical order? 0.68\nQ3 Does the summary avoid being a mere heap of loosely related facts or information? 0.43\nQ4 Do the sentences in the summary flow logically from one to the next, with clear transitions or connections\nbetween them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96",
+        "Ask, Don’t Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement\nTable 11.Binary questions forFluencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Is the summary free of grammatical errors? 0.54\nQ2 Is the summary free of spelling errors? 0.71\nQ3 Is the summary free of punctuation errors? 0.33\nQ4 Does the summary use appropriate and natural word choices? 0.81\nQ5 Does the summary have well-structured sentences that are easy to follow? 0.70\nQ6 Does the summary read smoothly and sound natural overall? 0.52\nQ7 Is the summary easy to understand without requiring re-reading due to language issues? 0.76\nTable 12.Binary questions forRelevanceon SummEval (5 questions).\nID Question Yes-rate\nQ1 Does the summary address the main topic or central event of the source article? 0.95\nQ2 Does the summary cover at least some of the key points or important details of the source article? 0.50"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.21",
+        "Ask_dont_judge.pdf p.21",
+        "Ask_dont_judge.pdf p.22"
+      ],
+      "rag_latency_ms": 963.0,
+      "rag_input_tokens": 956,
+      "rag_output_tokens": 43,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2B15GXN7KX4XQXGMTE",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651294Z",
+      "source_chunk": "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 21,
+      "chunk_index": null,
+      "question": "According to Table 10, what is the Yes-rate for the question regarding whether all named entities in a summary are accurately represented?",
+      "ground_truth_answer": "The Yes-rate for Q4, which asks if all named entities are accurately represented as they appear in the source article, is 0.91.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to Table 10 in [Ask_dont_judge.pdf p.21], the Yes-rate for the question regarding whether all named entities are accurately represented is 0.91.",
+      "retrieved_chunks": [
+        "Ask, Don’t Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement\nTable 11.Binary questions forFluencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Is the summary free of grammatical errors? 0.54\nQ2 Is the summary free of spelling errors? 0.71\nQ3 Is the summary free of punctuation errors? 0.33\nQ4 Does the summary use appropriate and natural word choices? 0.81\nQ5 Does the summary have well-structured sentences that are easy to follow? 0.70\nQ6 Does the summary read smoothly and sound natural overall? 0.52\nQ7 Is the summary easy to understand without requiring re-reading due to language issues? 0.76\nTable 12.Binary questions forRelevanceon SummEval (5 questions).\nID Question Yes-rate\nQ1 Does the summary address the main topic or central event of the source article? 0.95\nQ2 Does the summary cover at least some of the key points or important details of the source article? 0.50",
+        "E. Binary Questions for SummEval\nTables 9–12 list the binary questions auto-generated by BINEVALfor each SummEval evaluation dimension. These are the\nquestions referenced in Section 5.6 and Figure 3. Each question is designed so that “yes” indicates the output satisfies the\ncriterion and “no” indicates a violation.\nTable 9.Binary questions forCoherenceon SummEval (8 questions).\nID Question Yes-rate\nQ1 Does the summary have a well-defined structure (e.g., a clear beginning, middle, and/or end) rather than\nappearing randomly assembled?0.66\nQ2 Are the sentences in the summary arranged in a sensible and logical order? 0.68\nQ3 Does the summary avoid being a mere heap of loosely related facts or information? 0.43\nQ4 Do the sentences in the summary flow logically from one to the next, with clear transitions or connections\nbetween them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96",
+        "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.22",
+        "Ask_dont_judge.pdf p.21",
+        "Ask_dont_judge.pdf p.21"
+      ],
+      "rag_latency_ms": 5367.8,
+      "rag_input_tokens": 964,
+      "rag_output_tokens": 42,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BGQET0TBBDE705S09",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651419Z",
+      "source_chunk": "article)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91\nQ5 Are all numerical claims (dates, statistics, quantities, amounts) in the summary consistent with the source\narticle?0.95\nQ6 Are the causal relationships and event sequences described in the summary consistent with those in the\nsource article?0.87\nQ7 Does the summary avoid misrepresenting or distorting the meaning of information from the source article? 0.76\n21",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 21,
+      "chunk_index": null,
+      "question": "What does question Q5 evaluate regarding the summary in relation to the source article?",
+      "ground_truth_answer": "Question Q5 evaluates whether all numerical claims, such as dates, statistics, quantities, and amounts, are consistent with the source article.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to [Ask_dont_judge.pdf p.21], question Q5 evaluates whether all numerical claims (dates, statistics, quantities, amounts) in the summary are consistent with the source article.",
+      "retrieved_chunks": [
+        "Q1 Does the summary address the main topic or central event of the source article? 0.95\nQ2 Does the summary cover at least some of the key points or important details of the source article? 0.50\nQ3 Is the summary free from significant redundancy, such as repeating the same point multiple times in different\nwords?0.64\nQ4 Is the summary free from excessive trivial or unimportant details that dilute the coverage of main points? 0.72\nQ5 Does the summary prioritize the most newsworthy or significant information from the source rather than\nfocusing on minor or tangential aspects?0.49\n22",
+        "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91",
+        "article)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91\nQ5 Are all numerical claims (dates, statistics, quantities, amounts) in the summary consistent with the source\narticle?0.95\nQ6 Are the causal relationships and event sequences described in the summary consistent with those in the\nsource article?0.87\nQ7 Does the summary avoid misrepresenting or distorting the meaning of information from the source article? 0.76\n21"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.22",
+        "Ask_dont_judge.pdf p.21",
+        "Ask_dont_judge.pdf p.21"
+      ],
+      "rag_latency_ms": 845.2,
+      "rag_input_tokens": 728,
+      "rag_output_tokens": 42,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2B2SFPR2CMS8AGR9SC",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651496Z",
+      "source_chunk": "article)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91\nQ5 Are all numerical claims (dates, statistics, quantities, amounts) in the summary consistent with the source\narticle?0.95\nQ6 Are the causal relationships and event sequences described in the summary consistent with those in the\nsource article?0.87\nQ7 Does the summary avoid misrepresenting or distorting the meaning of information from the source article? 0.76\n21",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 21,
+      "chunk_index": null,
+      "question": "Which question in the provided text assesses the accuracy of named entities like people, organizations, and locations?",
+      "ground_truth_answer": "Question Q4 assesses whether all named entities, including people, organizations, and locations, are accurately represented as they appear in the source article.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to [Ask_dont_judge.pdf p.21], the question that assesses the accuracy of named entities is: \"Are all named entities (people, organizations, locations) in the summary accurately represented as they appear in the source article?\" (identified as Q4).",
+      "retrieved_chunks": [
+        "0.23 0.60 0.03 0.35 1.00Relevance\n0.2\n0.00.20.40.60.81.0\n0.2\n0.00.20.40.60.81.0\n0.2\n0.00.20.40.60.81.0\n0.2\n0.00.20.40.60.81.0\nFigure 3.Pairwise phi-coefficient correlation matrices within each\nSummEval dimension. Low off-diagonal values indicate questions\ncapture distinct aspects of the dimension. Mean off-diagonal ϕ\nacross all dimensions is 0.38. See Appendix E for question definitions.\nment with many simpler ones—mirroring the benefits of\ntask decomposition in prompting (Zhou et al., 2022; Khot\net al., 2022). A question like “Are all named entities accurately represented?” is easier to answer reliably than “Rate\nfactual consistency from 1–5.” On consistency, the seven\ntargeted questions yield yes-rates spread between 0.75 and\n0.95 (Table 10), indicating each captures a distinct difficulty\nlevel. This pattern holds across dimensions: fluency, relevance, and coherence show yes-rate spreads of 0.48, 0.46,\nand 0.86 respectively.\nVariance Reduction via Aggregation.Aggregating N",
+        "article)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91\nQ5 Are all numerical claims (dates, statistics, quantities, amounts) in the summary consistent with the source\narticle?0.95\nQ6 Are the causal relationships and event sequences described in the summary consistent with those in the\nsource article?0.87\nQ7 Does the summary avoid misrepresenting or distorting the meaning of information from the source article? 0.76\n21",
+        "between them?0.44\nQ5 Does the summary maintain a unified focus on a single main topic rather than drifting across multiple\nunrelated subjects?0.96\nQ6 Does the summary cover the main topic of the news article? 0.85\nQ7 Does the summary cover the key points of the news article? 0.10\nQ8 Does the summary present information in a clear manner that is easy to follow and understand? 0.61\nTable 10.Binary questions forConsistencyon SummEval (7 questions).\nID Question Yes-rate\nQ1 Are all statements in the summary entailed by or supported by the source article? 0.75\nQ2 Is the summary free of factual errors when compared to the source article? 0.82\nQ3 Is the summary free of hallucinated facts (i.e., information that is fabricated and not present in the source\narticle)?0.81\nQ4 Are all named entities (people, organizations, locations) in the summary accurately represented as they\nappear in the source article?0.91"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.8",
+        "Ask_dont_judge.pdf p.21",
+        "Ask_dont_judge.pdf p.21"
+      ],
+      "rag_latency_ms": 1792.8,
+      "rag_input_tokens": 926,
+      "rag_output_tokens": 57,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BY90KDBVN0TYC0W90",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651576Z",
+      "source_chunk": "Table 5.Coherence prompt: key changes from iteration 0 to iteration 1.\nIteration 0 (Baseline) Iteration 1 (Updated)\n“...logical connections between sentences (explicit cues like\n‘because, ’ ‘therefore, ’ or implicit continuity)... ”“...logical connections between sentences (implicit connections are acceptable; explicit markers like ‘after, ’ ‘because’\nare helpful butnot required)... ”\n“...global focus — every sentence stays directly related to the\nmain topic. ”“...relevance to the central claim: identify the article’s main\nclaim or core fact and ensure every sentenceadvances or\nsupports that claim. If a sentence does not advance the main\nargument, treat it as non-contributory. ”\n“Penalize only for poor logical flow, redundancy, misordering,\nor off-topic content, not for missing facts. ”“Do not penalize the summary for omitting background\ndetailsas long as the essential conflict or core fact remains\nclear. ”",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 14,
+      "chunk_index": null,
+      "question": "How did the requirement for logical connections between sentences change from Iteration 0 to Iteration 1?",
+      "ground_truth_answer": "In Iteration 0, explicit cues like 'because' or 'therefore' were required for logical connections. In Iteration 1, implicit connections became acceptable, and while explicit markers are helpful, they are no longer required.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to Table 5 in [Ask_dont_judge.pdf], the requirement changed from demanding explicit cues like \"because\" or \"therefore\" in Iteration 0 to accepting implicit connections in Iteration 1, where explicit markers are considered helpful but not required.",
+      "retrieved_chunks": [
+        "Table 5.Coherence prompt: key changes from iteration 0 to iteration 1.\nIteration 0 (Baseline) Iteration 1 (Updated)\n“...logical connections between sentences (explicit cues like\n‘because, ’ ‘therefore, ’ or implicit continuity)... ”“...logical connections between sentences (implicit connections are acceptable; explicit markers like ‘after, ’ ‘because’\nare helpful butnot required)... ”\n“...global focus — every sentence stays directly related to the\nmain topic. ”“...relevance to the central claim: identify the article’s main\nclaim or core fact and ensure every sentenceadvances or\nsupports that claim. If a sentence does not advance the main\nargument, treat it as non-contributory. ”\n“Penalize only for poor logical flow, redundancy, misordering,\nor off-topic content, not for missing facts. ”“Do not penalize the summary for omitting background\ndetailsas long as the essential conflict or core fact remains\nclear. ”",
+        "• “Programmatically verify the position of each token; if the count is wrong, rewrite until satisfied.”←requires\nself-verification loop\n• “Construct a structural outline and reference it when placing required words.”←implicit reasoning, not enforced\nThe accumulation of these unactionable instructions causesprompt bloat:\nInsight:At iteration 3, the prompt is large enough to contain useful format guidance but not yet so bloated that attention\ncompetition degrades all categories. By iteration 4, the accumulated computational instructions (which the model cannot\n15",
+        "Ask, Don’t Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement\nExtracted Lessons (Self-Update, Coherence)\n1.Implicit transitions are acceptable.Require logical connections but do not demand explicit cue words (“because,”\n“therefore”). Implicit continuity suffices if the narrative flows.\n2.Add a central-claim relevance criterion.Each sentence should advance the article’s main claim; sentences that do not\ncontribute are non-contributory regardless of grammatical correctness.\n3.Do not penalize omission of background details.Missing context should not lower coherence as long as the core fact and\nconflict remain clear.\nThese lessons produced targeted edits to the evaluation rubric:\nTable 5.Coherence prompt: key changes from iteration 0 to iteration 1.\nIteration 0 (Baseline) Iteration 1 (Updated)\n“...logical connections between sentences (explicit cues like"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.14",
+        "Ask_dont_judge.pdf p.15",
+        "Ask_dont_judge.pdf p.14"
+      ],
+      "rag_latency_ms": 966.7,
+      "rag_input_tokens": 752,
+      "rag_output_tokens": 55,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BBFY5FYGMF4X1EWAJ",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651639Z",
+      "source_chunk": "Table 5.Coherence prompt: key changes from iteration 0 to iteration 1.\nIteration 0 (Baseline) Iteration 1 (Updated)\n“...logical connections between sentences (explicit cues like\n‘because, ’ ‘therefore, ’ or implicit continuity)... ”“...logical connections between sentences (implicit connections are acceptable; explicit markers like ‘after, ’ ‘because’\nare helpful butnot required)... ”\n“...global focus — every sentence stays directly related to the\nmain topic. ”“...relevance to the central claim: identify the article’s main\nclaim or core fact and ensure every sentenceadvances or\nsupports that claim. If a sentence does not advance the main\nargument, treat it as non-contributory. ”\n“Penalize only for poor logical flow, redundancy, misordering,\nor off-topic content, not for missing facts. ”“Do not penalize the summary for omitting background\ndetailsas long as the essential conflict or core fact remains\nclear. ”",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 14,
+      "chunk_index": null,
+      "question": "What is the updated instruction regarding the omission of background details in Iteration 1?",
+      "ground_truth_answer": "Iteration 1 specifies that summaries should not be penalized for omitting background details, provided that the essential conflict or core fact remains clear.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to [Ask_dont_judge.pdf p.14], the updated instruction states: \"Do not penalize the summary for omitting background details as long as the essential conflict or core fact remains clear.\"",
+      "retrieved_chunks": [
+        "• “Programmatically verify the position of each token; if the count is wrong, rewrite until satisfied.”←requires\nself-verification loop\n• “Construct a structural outline and reference it when placing required words.”←implicit reasoning, not enforced\nThe accumulation of these unactionable instructions causesprompt bloat:\nInsight:At iteration 3, the prompt is large enough to contain useful format guidance but not yet so bloated that attention\ncompetition degrades all categories. By iteration 4, the accumulated computational instructions (which the model cannot\n15",
+        "with examples of both successful updates and failure modes.\nA.2.1. EXAMPLE1: SELF-UPDATE ONCOHERENCE(SUMMEVAL)\nResult:Spearmanρimproved from .521 (baseline) to .610 (iteration 1).\nThe self-update pipeline identified that the baseline coherence prompt wastoo stricton single-sentence summaries and\npenalized omission of background details, while human annotators focused primarily on logical flow. Three representative\nlessons were extracted:\n13",
+        "Table 5.Coherence prompt: key changes from iteration 0 to iteration 1.\nIteration 0 (Baseline) Iteration 1 (Updated)\n“...logical connections between sentences (explicit cues like\n‘because, ’ ‘therefore, ’ or implicit continuity)... ”“...logical connections between sentences (implicit connections are acceptable; explicit markers like ‘after, ’ ‘because’\nare helpful butnot required)... ”\n“...global focus — every sentence stays directly related to the\nmain topic. ”“...relevance to the central claim: identify the article’s main\nclaim or core fact and ensure every sentenceadvances or\nsupports that claim. If a sentence does not advance the main\nargument, treat it as non-contributory. ”\n“Penalize only for poor logical flow, redundancy, misordering,\nor off-topic content, not for missing facts. ”“Do not penalize the summary for omitting background\ndetailsas long as the essential conflict or core fact remains\nclear. ”"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.15",
+        "Ask_dont_judge.pdf p.13",
+        "Ask_dont_judge.pdf p.14"
+      ],
+      "rag_latency_ms": 936.2,
+      "rag_input_tokens": 665,
+      "rag_output_tokens": 43,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BGEN9ACENMPA34M6B",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651688Z",
+      "source_chunk": "× Q3.Entities accurate?N— Misattributes Russia’s stated\npurpose to the Pentagon.✓Q6–7.No hallucinations? No misrepresentation of scope?\nY— Core event is described.\nScore:3/7questions answeredY⇒3/7≈0.43scale to 1–5− − − − − →1.57(human:2.0, error: 0.43)\nKey insight.G-Eval and UniEval assign perfect consistency (5.0) because the summarylooks plausibleat a surface level — it\nmentions the correct aircraft and event. BinEval’s decomposed questions probe each factual claim independently, catching the\nmisattribution (Q1, Q3), fabricated URL (Q2), and conflated accounts (Q5). The resulting 3/7score closely matches the human rating\nof 2.0, while holistic methods miss every error.\nFigure 4.Illustrative SummEval consistency example. The summary contains subtle factual errors (underlined) that holistic scoring\nmethods miss. BinEval decomposes consistency into seven binary questions, each targeting a specific error type, producing a score closely\naligned with the human judgment.",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 9,
+      "chunk_index": null,
+      "question": "Why do G-Eval and UniEval assign a perfect consistency score of 5.0 to the summary mentioned in the text?",
+      "ground_truth_answer": "They assign a perfect score because the summary looks plausible at a surface level by mentioning the correct aircraft and event.",
+      "generation_method": "synthetic",
+      "generated_answer": "I cannot answer this question based on the provided context. The text discusses how G-Eval and UniEval collapse to extreme scores on edge cases and exhibit compressed score ranges, but it does not mention a specific instance where they assign a perfect consistency score of 5.0.",
+      "retrieved_chunks": [
+        "nuance: Q2 (Y, no spelling errors) and Q8 (Y, comprehensible gist) prevent a floor score. Score: 2/8→1.50 , between 1 and 2.\nG-Eval and UniEval assign the minimum because any fluency issue triggers a blanket negative judgment.\nFigure 5.Four illustrative SummEval examples, one per evaluation dimension. In each case, BinEval’s question decomposition produces\nscores closely aligned with human judgments by independently assessing multiple quality facets. Holistic methods (G-Eval, UniEval with\ngpt-oss) collapse to extreme scores on edge cases—short-but-correct summaries, partially readable text, or concise one-liners—because a\nsingle judgment conflates orthogonal quality dimensions.\n12",
+        "UniEval and G-Eval exhibit more compressed score ranges\nthat attenuate differences between systems, especially in\nthe middle of the ranking. The gpt-oss-based methods are\ngenerally more conservative in absolute score level, but they\nstill recover much of the broad system ordering. Another\nclear pattern is distributional width: BINEVALvariants tend\nto show wider, more human-like within-system variance,\nwhereas UniEval and G-Eval produce tighter violins that\nmay understate genuine score variability. Agreement across\nmethods is strongest for the highest human quality systems\n(rightmost), while the lower-quality systems show larger divergence, suggesting that distinguishing poor from mediocre\nsummaries remains a challenge for automated evaluation\nmethods.\n5.2. Evaluation Quality: Topical-Chat\nThe dialogue results show that BINEVALtransfers effectively beyond summarization. BINEVAL(Claude) achieves\nthe best average Spearman correlation on Topical-Chat",
+        "1.5\n1.0\n2.0\n1.0\n2.5\n1.0\n0 1 2 3(c) Fluency\nHuman\nBinEval (Cl.)\nBinEval (gpt-oss)\nG-Eval (GPT-4)\nG-Eval (gpt-oss)\nUniEval (T5)\nUniEval (gpt-oss)3.33\n3.67\n4.33\n3.5\n1.0\n3.8\n1.0\n0 1 2 3 4 5(d) Relevance\nFigure 6.Score comparisons for four illustrative SummEval examples, one per dimension. Dashed line marks the human reference.\nBinEval (Claude) consistently tracks human scores across all dimensions. G-Eval (GPT-4) and UniEval (T5) — the published baselines —\nperform reasonably, but when their evaluation formats are applied to gpt-oss without Monte Carlo sampling or fine-tuning, scores collapse\non edge cases.\nA.2. Prompt Evolution: Illustrative Examples\nThis section illustrates how BinEval’s iterative prompt update modifies evaluation and generation prompts across iterations,\nwith examples of both successful updates and failure modes.\nA.2.1. EXAMPLE1: SELF-UPDATE ONCOHERENCE(SUMMEVAL)\nResult:Spearmanρimproved from .521 (baseline) to .610 (iteration 1)."
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.12",
+        "Ask_dont_judge.pdf p.5",
+        "Ask_dont_judge.pdf p.13"
+      ],
+      "rag_latency_ms": 1276.7,
+      "rag_input_tokens": 909,
+      "rag_output_tokens": 55,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW261V2BHAEZAV5QFTXQC9RA",
+      "dataset_id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+      "created_at": "2026-06-26T14:41:28.651738Z",
+      "source_chunk": "× Q3.Entities accurate?N— Misattributes Russia’s stated\npurpose to the Pentagon.✓Q6–7.No hallucinations? No misrepresentation of scope?\nY— Core event is described.\nScore:3/7questions answeredY⇒3/7≈0.43scale to 1–5− − − − − →1.57(human:2.0, error: 0.43)\nKey insight.G-Eval and UniEval assign perfect consistency (5.0) because the summarylooks plausibleat a surface level — it\nmentions the correct aircraft and event. BinEval’s decomposed questions probe each factual claim independently, catching the\nmisattribution (Q1, Q3), fabricated URL (Q2), and conflated accounts (Q5). The resulting 3/7score closely matches the human rating\nof 2.0, while holistic methods miss every error.\nFigure 4.Illustrative SummEval consistency example. The summary contains subtle factual errors (underlined) that holistic scoring\nmethods miss. BinEval decomposes consistency into seven binary questions, each targeting a specific error type, producing a score closely\naligned with the human judgment.",
+      "source_file": "Ask_dont_judge.pdf",
+      "source_page": 9,
+      "chunk_index": null,
+      "question": "How does BinEval identify factual errors in a summary compared to holistic scoring methods?",
+      "ground_truth_answer": "BinEval decomposes consistency into seven binary questions that probe each factual claim independently, which allows it to detect specific errors like misattributions, fabricated URLs, and conflated accounts that holistic methods miss.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to [Ask_dont_judge.pdf p.9], BinEval identifies factual errors by decomposing consistency into seven targeted binary questions that probe distinct claim types, such as factual support, fabrication, entity accuracy, and numerical correctness. In contrast, holistic methods like G-Eval and UniEval conflate local correctness with global consistency, often assigning perfect scores to summaries that appear surface-plausible even when they contain specific factual errors. Consequently, holistic methods miss errors that BinEval successfully catches by independently assessing each factual claim.",
+      "retrieved_chunks": [
+        "methods miss. BinEval decomposes consistency into seven binary questions, each targeting a specific error type, producing a score closely\naligned with the human judgment.\nboth G-Eval and UniEval assign a perfect consistency score\nof 5.0, because the summary issurface-plausible—it names\nthe correct aircraft types and describes the general event\naccurately. Holistic scoring conflates local correctness with\nglobal consistency, rewarding fluent, topically coherent text\neven when specific claims are wrong.\nBinEval avoids this by decomposing consistency into seven\ntargeted binary questions, each probing a distinct claim\ntype: factual support, fabrication, entity accuracy, numerical\ncorrectness, causal fidelity, hallucination, and scope representation. Questions Q1, Q3, and Q5 directly surface the\nmisattribution and conflation; Q2 flags the fabricated URL.\nThe resulting score of 3/7≈1.57 (scaled to 1–5) closely\nmatches the human rating of 2.0 ( |∆|= 0.43 ), whereas",
+        "× Q3.Entities accurate?N— Misattributes Russia’s stated\npurpose to the Pentagon.✓Q6–7.No hallucinations? No misrepresentation of scope?\nY— Core event is described.\nScore:3/7questions answeredY⇒3/7≈0.43scale to 1–5− − − − − →1.57(human:2.0, error: 0.43)\nKey insight.G-Eval and UniEval assign perfect consistency (5.0) because the summarylooks plausibleat a surface level — it\nmentions the correct aircraft and event. BinEval’s decomposed questions probe each factual claim independently, catching the\nmisattribution (Q1, Q3), fabricated URL (Q2), and conflated accounts (Q5). The resulting 3/7score closely matches the human rating\nof 2.0, while holistic methods miss every error.\nFigure 4.Illustrative SummEval consistency example. The summary contains subtle factual errors (underlined) that holistic scoring\nmethods miss. BinEval decomposes consistency into seven binary questions, each targeting a specific error type, producing a score closely\naligned with the human judgment.",
+        "nuance: Q2 (Y, no spelling errors) and Q8 (Y, comprehensible gist) prevent a floor score. Score: 2/8→1.50 , between 1 and 2.\nG-Eval and UniEval assign the minimum because any fluency issue triggers a blanket negative judgment.\nFigure 5.Four illustrative SummEval examples, one per evaluation dimension. In each case, BinEval’s question decomposition produces\nscores closely aligned with human judgments by independently assessing multiple quality facets. Holistic methods (G-Eval, UniEval with\ngpt-oss) collapse to extreme scores on edge cases—short-but-correct summaries, partially readable text, or concise one-liners—because a\nsingle judgment conflates orthogonal quality dimensions.\n12"
+      ],
+      "retrieved_chunk_sources": [
+        "Ask_dont_judge.pdf p.9",
+        "Ask_dont_judge.pdf p.9",
+        "Ask_dont_judge.pdf p.12"
+      ],
+      "rag_latency_ms": 1175.6,
+      "rag_input_tokens": 859,
+      "rag_output_tokens": 105,
+      "rag_model": "gemini-3.1-flash-lite",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    }
+  ]
+}

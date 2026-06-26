@@ -1,0 +1,17 @@
+{
+  "id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+  "name": "POT-db1",
+  "description": null,
+  "created_at": "2026-06-26T14:08:08.189237Z",
+  "updated_at": "2026-06-26T14:17:38.383842Z",
+  "generation_method": "synthetic",
+  "source_collection": "POTracker",
+  "source_files": [
+    "POTracker-resaerch.pdf"
+  ],
+  "generator_model": "gemini-3.1-flash-lite",
+  "total_pairs": 10,
+  "status": "completed",
+  "tags": [],
+  "version": "1.0.1"
+}

@@ -1,0 +1,291 @@
+{
+  "metadata": {
+    "id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+    "name": "POT-db1",
+    "description": null,
+    "created_at": "2026-06-26T14:08:08.189237Z",
+    "updated_at": "2026-06-26T14:16:14.855073Z",
+    "generation_method": "synthetic",
+    "source_collection": "POTracker",
+    "source_files": [
+      "POTracker-resaerch.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 10,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1"
+  },
+  "pairs": [
+    {
+      "id": "qap_01KW244SFW7Q8T7D4DZK7KG3J4",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188327Z",
+      "source_chunk": "via forms or chat interfaces. Utility companies\noften send data directly from their Outage Management Systems (OMS) or Geographic Information Systems (GIS), while emergency responders\nmay relay information manually or through partner platforms. Public contributions may include\ncitizen reports submitted through local portals or\nintegrated communication channels. ODIN accommodates this heterogeneity using a flexible interface that supports both automated API submissions\nand manual uploads. Each report, regardless of\nformat, is parsed and preprocessed to extract key\nmetadata such as location identifiers, outage start\ntime, number of affected customers, and restoration\nestimates. The data is then queued for validation\nand transformed into a standardized schema. We\nrefer to this level of raw input data asnonstandard\n(power outage) reports.\n4.2 Data Label Generation\nOne significant challenge is that, while there are",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 3,
+      "chunk_index": null,
+      "question": "What specific metadata is extracted from power outage reports during the preprocessing stage?",
+      "ground_truth_answer": "The extracted metadata includes location identifiers, outage start time, the number of affected customers, and restoration estimates.",
+      "generation_method": "synthetic",
+      "generated_answer": "to asstandard reports—are critical for",
+      "retrieved_chunks": [
+        "and transformed into a standardized schema. We\nrefer to this level of raw input data asnonstandard\n(power outage) reports.\n4.2 Data Label Generation\nOne significant challenge is that, while there are\nmany datasets containing users’ power outage reports, there is no readily available dataset of expected outputs in the CIM-IEC-61968-3 standard\nformat as defined by the ODIN documentation (International Electrotechnical Commission, 2021).\nAlthough these standardized datasets—referred\nto asstandard reports—are critical for guiding\nLLM optimization, generating them manually is\nresource-intensive due to the dynamic nature of outage reports and the sheer volume of user-submitted\n3https://huggingface.co/Qwen/Qwen2.5-7B-Instruct\n3"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.3"
+      ],
+      "rag_latency_ms": 2132.2,
+      "rag_input_tokens": 365,
+      "rag_output_tokens": 8,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFW40SPF00Z56C98Y2K",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188522Z",
+      "source_chunk": "via forms or chat interfaces. Utility companies\noften send data directly from their Outage Management Systems (OMS) or Geographic Information Systems (GIS), while emergency responders\nmay relay information manually or through partner platforms. Public contributions may include\ncitizen reports submitted through local portals or\nintegrated communication channels. ODIN accommodates this heterogeneity using a flexible interface that supports both automated API submissions\nand manual uploads. Each report, regardless of\nformat, is parsed and preprocessed to extract key\nmetadata such as location identifiers, outage start\ntime, number of affected customers, and restoration\nestimates. The data is then queued for validation\nand transformed into a standardized schema. We\nrefer to this level of raw input data asnonstandard\n(power outage) reports.\n4.2 Data Label Generation\nOne significant challenge is that, while there are",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 3,
+      "chunk_index": null,
+      "question": "How does the ODIN system handle the variety of input formats received from different sources?",
+      "ground_truth_answer": "ODIN uses a flexible interface that supports both automated API submissions and manual uploads, then parses and transforms the data into a standardized schema.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to `POTracker-resaerch.",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 1984.2,
+      "rag_input_tokens": 291,
+      "rag_output_tokens": 10,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWX9AH7MQ2YNH1X2ST",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188564Z",
+      "source_chunk": "4 Approach\nIn this section, we describe the modules provided\nfor the POTracker application, shown in Figure 2.\n4.1 Data Preprocessing\nIn this module, the input data is preprocessed to extract meaningful information related to power outages. ODIN’s data collection process is designed to\ningest outage reports from a wide range of sources,\nincluding utility companies, emergency response\nagencies, and even the general public. These inputs\nreflect real-time or near-real-time conditions across\ndifferent regions in the United States. Because contributors operate at different technical levels, the\nincoming data varies widely in format—ranging\nfrom well-structured XML and JSON files to unstructured natural language descriptions submitted\nvia forms or chat interfaces. Utility companies\noften send data directly from their Outage Management Systems (OMS) or Geographic Information Systems (GIS), while emergency responders",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 3,
+      "chunk_index": null,
+      "question": "What are the various sources from which ODIN collects power outage reports?",
+      "ground_truth_answer": "ODIN collects outage reports from utility companies, emergency response agencies, and the general public.",
+      "generation_method": "synthetic",
+      "generated_answer": "I cannot answer this question based on the",
+      "retrieved_chunks": [
+        "ratory and of Energy Office of Electricity, 2023),\nprovided by the Oak Ridge National Laboratory\n(ORNL). Its primary goal is to establish a comprehensive digital reporting standard for power\noutage data, enabling utilities and stakeholders to\nexchange information seamlessly. This initiative\naims to enhance restoration efforts, reliability, risk\nmitigation, and emergency response by providing\nstandardized and real-time outage information. A\ncentral feature of ODIN is its delivery of real-time\npower outage data at the county level. This information is accessible via the Open Energy Data Portal, providing stakeholders with up-to-date insights\ninto outages across various regions. By leveraging\nthis data, emergency responders, utility providers,\nand other key entities can enhance their situational\nawareness and better coordinate their responses\nto power disruptions. Each data point provided\nin the ODIN dataset needs to follow standard of\nCommon Information Model (CIM) IEC 61968-3"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 2114.2,
+      "rag_input_tokens": 398,
+      "rag_output_tokens": 8,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFW78N0CM4DAZGGERE7",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188599Z",
+      "source_chunk": "4 Approach\nIn this section, we describe the modules provided\nfor the POTracker application, shown in Figure 2.\n4.1 Data Preprocessing\nIn this module, the input data is preprocessed to extract meaningful information related to power outages. ODIN’s data collection process is designed to\ningest outage reports from a wide range of sources,\nincluding utility companies, emergency response\nagencies, and even the general public. These inputs\nreflect real-time or near-real-time conditions across\ndifferent regions in the United States. Because contributors operate at different technical levels, the\nincoming data varies widely in format—ranging\nfrom well-structured XML and JSON files to unstructured natural language descriptions submitted\nvia forms or chat interfaces. Utility companies\noften send data directly from their Outage Management Systems (OMS) or Geographic Information Systems (GIS), while emergency responders",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 3,
+      "chunk_index": null,
+      "question": "In what formats does ODIN receive incoming data regarding power outages?",
+      "ground_truth_answer": "The incoming data varies from well-structured XML and JSON files to unstructured natural language descriptions submitted through forms or chat interfaces.",
+      "generation_method": "synthetic",
+      "generated_answer": "I cannot answer this question based on the",
+      "retrieved_chunks": [
+        "ratory and of Energy Office of Electricity, 2023),\nprovided by the Oak Ridge National Laboratory\n(ORNL). Its primary goal is to establish a comprehensive digital reporting standard for power\noutage data, enabling utilities and stakeholders to\nexchange information seamlessly. This initiative\naims to enhance restoration efforts, reliability, risk\nmitigation, and emergency response by providing\nstandardized and real-time outage information. A\ncentral feature of ODIN is its delivery of real-time\npower outage data at the county level. This information is accessible via the Open Energy Data Portal, providing stakeholders with up-to-date insights\ninto outages across various regions. By leveraging\nthis data, emergency responders, utility providers,\nand other key entities can enhance their situational\nawareness and better coordinate their responses\nto power disruptions. Each data point provided\nin the ODIN dataset needs to follow standard of\nCommon Information Model (CIM) IEC 61968-3"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 2210.0,
+      "rag_input_tokens": 397,
+      "rag_output_tokens": 8,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWM61N7VENW8C9CS9X",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188626Z",
+      "source_chunk": "ratory and of Energy Office of Electricity, 2023),\nprovided by the Oak Ridge National Laboratory\n(ORNL). Its primary goal is to establish a comprehensive digital reporting standard for power\noutage data, enabling utilities and stakeholders to\nexchange information seamlessly. This initiative\naims to enhance restoration efforts, reliability, risk\nmitigation, and emergency response by providing\nstandardized and real-time outage information. A\ncentral feature of ODIN is its delivery of real-time\npower outage data at the county level. This information is accessible via the Open Energy Data Portal, providing stakeholders with up-to-date insights\ninto outages across various regions. By leveraging\nthis data, emergency responders, utility providers,\nand other key entities can enhance their situational\nawareness and better coordinate their responses\nto power disruptions. Each data point provided\nin the ODIN dataset needs to follow standard of\nCommon Information Model (CIM) IEC 61968-3",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 2,
+      "chunk_index": null,
+      "question": "What is the primary goal of the ODIN initiative?",
+      "ground_truth_answer": "The primary goal of ODIN is to establish a comprehensive digital reporting standard for power outage data, which enables utilities and stakeholders to exchange information seamlessly.",
+      "generation_method": "synthetic",
+      "generated_answer": "I cannot answer this question based on the provided",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 2046.1,
+      "rag_input_tokens": 285,
+      "rag_output_tokens": 9,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWBYYFP7HT7MF4MW0W",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188653Z",
+      "source_chunk": "ratory and of Energy Office of Electricity, 2023),\nprovided by the Oak Ridge National Laboratory\n(ORNL). Its primary goal is to establish a comprehensive digital reporting standard for power\noutage data, enabling utilities and stakeholders to\nexchange information seamlessly. This initiative\naims to enhance restoration efforts, reliability, risk\nmitigation, and emergency response by providing\nstandardized and real-time outage information. A\ncentral feature of ODIN is its delivery of real-time\npower outage data at the county level. This information is accessible via the Open Energy Data Portal, providing stakeholders with up-to-date insights\ninto outages across various regions. By leveraging\nthis data, emergency responders, utility providers,\nand other key entities can enhance their situational\nawareness and better coordinate their responses\nto power disruptions. Each data point provided\nin the ODIN dataset needs to follow standard of\nCommon Information Model (CIM) IEC 61968-3",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 2,
+      "chunk_index": null,
+      "question": "Which standard must each data point in the ODIN dataset follow?",
+      "ground_truth_answer": "Each data point provided in the ODIN dataset must follow the Common Information Model (CIM) IEC 61968-3 standard.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to `POTracker-resaerch.",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 2641.4,
+      "rag_input_tokens": 287,
+      "rag_output_tokens": 10,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWH9QE4ENFVTNG2ZGE",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188705Z",
+      "source_chunk": "awareness and better coordinate their responses\nto power disruptions. Each data point provided\nin the ODIN dataset needs to follow standard of\nCommon Information Model (CIM) IEC 61968-3\n(International Electrotechnical Commission, 2021).\nVarious defined templates of ODIN data points can\nbe found in the ODIN documentation (Laboratory,\n2023). Users face several challenges when providing input to the ODIN system. Often, the input is\nsubmitted in unstructured or free-form formats, including non-standard XML and JSON files, as well\nas free-text descriptions. This lack of standardization complicates data processing and integration.\nTo overcome this challenge, we address the following important task in the context of power\noutage reporting: Power Outage Report Generation. This task involves transforming loosely\nstructured or noisy XML documents, collected\nfrom users, into canonical representations as defined by ORNL documentation. In this work, we\nconsider the well-known Close model, GPT-5.2",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 2,
+      "chunk_index": null,
+      "question": "Which standard must data points in the ODIN dataset follow?",
+      "ground_truth_answer": "Each data point in the ODIN dataset must follow the Common Information Model (CIM) IEC 61968-3 standard.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to POTracker-resaerch.pdf,",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 2052.6,
+      "rag_input_tokens": 286,
+      "rag_output_tokens": 11,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWW0VZZDZVBRGXRY05",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188741Z",
+      "source_chunk": "awareness and better coordinate their responses\nto power disruptions. Each data point provided\nin the ODIN dataset needs to follow standard of\nCommon Information Model (CIM) IEC 61968-3\n(International Electrotechnical Commission, 2021).\nVarious defined templates of ODIN data points can\nbe found in the ODIN documentation (Laboratory,\n2023). Users face several challenges when providing input to the ODIN system. Often, the input is\nsubmitted in unstructured or free-form formats, including non-standard XML and JSON files, as well\nas free-text descriptions. This lack of standardization complicates data processing and integration.\nTo overcome this challenge, we address the following important task in the context of power\noutage reporting: Power Outage Report Generation. This task involves transforming loosely\nstructured or noisy XML documents, collected\nfrom users, into canonical representations as defined by ORNL documentation. In this work, we\nconsider the well-known Close model, GPT-5.2",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 2,
+      "chunk_index": null,
+      "question": "What is the primary challenge users face when providing input to the ODIN system?",
+      "ground_truth_answer": "Users often submit input in unstructured or free-form formats, such as non-standard XML and JSON files or free-text descriptions, which complicates data processing and integration.",
+      "generation_method": "synthetic",
+      "generated_answer": "",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 33421.9,
+      "rag_input_tokens": 0,
+      "rag_output_tokens": 0,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWHESVAA4H2XA7C9D8",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188778Z",
+      "source_chunk": "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 2,
+      "chunk_index": null,
+      "question": "What is the purpose of the ODIN templates in the context of electric outage reports?",
+      "ground_truth_answer": "The ODIN templates provide a more restrictive and unified schema for all electric outage reports.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to POTracker-resaerch.pdf p",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 19949.2,
+      "rag_input_tokens": 291,
+      "rag_output_tokens": 11,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    },
+    {
+      "id": "qap_01KW244SFWD3DF50PC6BAHQTQC",
+      "dataset_id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
+      "created_at": "2026-06-26T14:08:08.188806Z",
+      "source_chunk": "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2",
+      "source_file": "POTracker-resaerch.pdf",
+      "source_page": 2,
+      "chunk_index": null,
+      "question": "Why are domain experts often required to manually map properties and values when using ODIN templates?",
+      "ground_truth_answer": "Domain experts are required to manually map properties and values to transform nonstandard inputs into the standardized format specified in the ODIN documentation.",
+      "generation_method": "synthetic",
+      "generated_answer": "According to POTracker-resaerch.pdf p",
+      "retrieved_chunks": [
+        "related outage events. The output, formatted according to ODIN templates, adheres to a more restrictive and unified schema for all electric outage\nreports. To transform nonstandard inputs into this\nstandardized format, domain experts are often required to manually map properties and values to\nthe target template specified in the ODIN documentation (Laboratory, 2023).\n3 Background\nIn this section, we describe key concepts used\nthroughout the paper.\n2"
+      ],
+      "retrieved_chunk_sources": [
+        "POTracker-resaerch.pdf p.2"
+      ],
+      "rag_latency_ms": 2358.1,
+      "rag_input_tokens": 292,
+      "rag_output_tokens": 11,
+      "rag_model": "gemini-3.5-flash",
+      "metric_scores": {},
+      "composite_score": null,
+      "status": "answered",
+      "error_message": null
+    }
+  ]
+}

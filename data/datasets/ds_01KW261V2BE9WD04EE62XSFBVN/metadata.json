@@ -1,0 +1,17 @@
+{
+  "id": "ds_01KW261V2BE9WD04EE62XSFBVN",
+  "name": "Ask_Dont_Judge",
+  "description": "Sample: 25\nPair/Chunk: 2\nMax pairs: 10\nTemperature: 0.20",
+  "created_at": "2026-06-26T14:41:28.651775Z",
+  "updated_at": "2026-06-26T14:53:41.876166Z",
+  "generation_method": "synthetic",
+  "source_collection": "ask-dont-judge",
+  "source_files": [
+    "Ask_dont_judge.pdf"
+  ],
+  "generator_model": "gemini-3.1-flash-lite",
+  "total_pairs": 10,
+  "status": "completed",
+  "tags": [],
+  "version": "1.0.3"
+}

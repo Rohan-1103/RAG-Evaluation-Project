@@ -99,7 +99,7 @@ COPY pyproject.toml ./
 # validator still runs at app startup and is harmless as a no-op when
 # the directories already exist, but ownership must be set as root
 # first or appuser would lack write permission to its own data/logs.
-RUN mkdir -p /app/data /app/logs && chown -R appuser:appuser /app
+RUN mkdir -p /app/data /app/logs /home/appuser/.cache/huggingface && chown -R appuser:appuser /app /home/appuser/.cache
 
 USER appuser
 

@@ -542,10 +542,10 @@ eval_run:
 
   # Delay between questions (seconds) to respect free tier rate limits
   # Set to 0.0 to disable. Recommended: 1.0-2.0 on Gemini free tier.
-  inter_question_delay_seconds: 1.0
+  inter_question_delay_seconds: 4.0
 
   # Whether to save intermediate results to SQLite after each question
-  # Allows partial result recovery if a run is interrupted
+  # Allows partial result recovery if a run is inter rupted
   checkpoint_after_each_question: true
 
 # =============================================================================

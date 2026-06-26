@@ -1093,13 +1093,16 @@ class ComparisonMatrixBuilder:
             reports=complete_reports,
         )
 
+        best_entry = matrix.best_model_by_composite
+        best_score_str = f"{best_entry.composite_mean:.3f}" if best_entry else "N/A"    
+
         logger.info(
             f"ComparisonMatrixBuilder: Built matrix "
             f"'{matrix.matrix_id}' with "
             f"{len(entries)} model entries. "
             f"Best model: "
-            f"'{matrix.best_model_by_composite.rag_model if matrix.best_model_by_composite else 'N/A'}' "
-            f"(composite={matrix.best_model_by_composite.composite_mean:.3f if matrix.best_model_by_composite else 0})"
+            f"'{best_entry.rag_model if best_entry else 'N/A'}' "
+            f"(composite={best_score_str})"
         )
 
         return matrix
