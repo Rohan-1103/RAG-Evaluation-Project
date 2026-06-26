@@ -1,0 +1,41 @@
+# Virtual environments and dependency artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Data and logs — these are bind-mounted at runtime, not baked into
+# the image. Including them here would also leak any locally-ingested
+# documents or generated datasets into a built image layer.
+data/
+logs/
+
+# Local environment and secrets — .env is supplied via docker-compose's
+# env_file at RUN time, never copied into the image at BUILD time. An
+# image containing a baked-in GEMINI_API_KEY would leak it to anyone
+# who ever pulls or inspects that image.
+.env
+.env.*
+!.env.example
+
+# Version control
+.git/
+.gitignore
+
+# Testing and coverage artifacts
+tests/
+htmlcov/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Docs
+README.md
+*.md

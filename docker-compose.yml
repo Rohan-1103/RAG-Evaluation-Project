@@ -1,0 +1,89 @@
+# =============================================================================
+# docker-compose.yml — one-command startup for the full stack.
+#
+# Two services, one shared image (built once, run twice with different
+# commands) — api runs FastAPI/uvicorn, ui runs Streamlit. No separate
+# database or vector-store service exists because ChromaDB
+# (PersistentClient, file-based) and SQLite are both embedded, file-based
+# stores with no server process of their own to containerise.
+#
+# Path resolution note: every file-based setting in .env.example
+# (CHROMA_PERSIST_DIR=./data/vectorstore, DATABASE_URL=sqlite+aiosqlite:///./data/rag_eval.db,
+# LOG_FILE=./logs/app.log, etc.) is a RELATIVE path. Because this
+# Dockerfile's WORKDIR is /app, and the volumes below bind-mount
+# ./data -> /app/data and ./logs -> /app/logs, those existing relative
+# paths resolve correctly inside the container with ZERO environment
+# overrides — the same .env file works unmodified for both the local
+# `poetry run uvicorn ...` workflow and this docker-compose workflow.
+# =============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rag-eval-bench:latest
+    container_name: rag-eval-bench-api
+    command: >
+      uvicorn src.api.app:create_app --factory
+      --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # --reload watches the filesystem for changes and is meant for
+      # local `poetry run` development against a live source tree.
+      # This image COPIES source at build time (it isn't bind-mounted),
+      # so --reload has nothing to watch and only adds inotify overhead
+      # — explicitly disabled regardless of what API_RELOAD is set to
+      # in the developer's local .env.
+      API_RELOAD: "false"
+    volumes:
+      # Bind mounts, not named volumes, deliberately: this mirrors the
+      # exact ./data and ./logs directories the non-Docker workflow
+      # already creates and reads/writes locally (see
+      # Settings.create_required_directories in config/settings.py) —
+      # generated datasets, the ChromaDB index, and the SQLite file are
+      # all directly inspectable on the host filesystem, not hidden
+      # inside an opaque Docker-managed volume.
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Named volume specifically for the HuggingFace model cache: this
+      # is a ~90MB binary artifact nobody needs to browse on the host,
+      # and persisting it across container recreations is what avoids
+      # EmbeddingManager re-downloading all-MiniLM-L6-v2 on every
+      # `docker-compose up` after the first.
+      - hf_cache:/home/appuser/.cache/huggingface
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rag-eval-bench:latest
+    container_name: rag-eval-bench-ui
+    command: >
+      streamlit run ui/app.py
+      --server.address 0.0.0.0 --server.port 8501
+      --server.headless true
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      # The one setting that genuinely MUST differ from the local .env:
+      # "localhost" inside the ui container refers to the ui container
+      # itself, not the api container, even though both ports are
+      # published to the host's real localhost outside of Docker.
+      # "api" is resolvable here because docker-compose places every
+      # service on one shared network, addressable by service name.
+      API_BASE_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  hf_cache:
+    driver: local

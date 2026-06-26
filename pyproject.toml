@@ -29,7 +29,7 @@ chromadb = "0.4.24"
 
 # --- Embeddings (local, zero API cost) ---
 sentence-transformers = "^3.1.1"
-torch = { version = "^2.4.1", optional = true }   # pulled by sentence-transformers
+torch = { version = "^2.4.1", source = "pytorch-cpu"}   # pulled by sentence-transformers
 
 # --- Configuration & Validation ---
 pydantic = "^2.7.4"
@@ -216,3 +216,11 @@ exclude_lines = [
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# =============================================================================
+# PACKAGE SOURCES — CPU-only torch wheel to avoid pulling multi-GB CUDA libs
+# =============================================================================
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
