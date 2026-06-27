@@ -169,5 +169,43 @@
     "tags": [],
     "version": "1.0.3",
     "dataset_dir": "/app/data/datasets/ds_01KW261V2BE9WD04EE62XSFBVN"
+  },
+  "ds_01KW3W2BR92GHDEM2VFBY74GR2": {
+    "id": "ds_01KW3W2BR92GHDEM2VFBY74GR2",
+    "name": "KARLA-dataset-1",
+    "description": "Chunks to sample: 5\nPairs/chunk: 2\nMax pairs: 10\nTemp: 0.20",
+    "created_at": "2026-06-27T06:25:28.841302+00:00",
+    "updated_at": "2026-06-27T06:43:58.415959+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "KARLA",
+    "source_files": [
+      "KARLA.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 10,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "/app/data/datasets/ds_01KW3W2BR92GHDEM2VFBY74GR2"
+  },
+  "ds_01KW3XNWJN25Q6DABN8YE899P4": {
+    "id": "ds_01KW3XNWJN25Q6DABN8YE899P4",
+    "name": "KARLA-ds-1",
+    "description": "Sample Chunks: 10\nPairs/chunk: 2\nMax pairs: 5\nTemp: 0.20",
+    "created_at": "2026-06-27T06:53:37.237387+00:00",
+    "updated_at": "2026-06-27T07:00:28.873033+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "KARLA",
+    "source_files": [
+      "KARLA.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 5,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.2",
+    "dataset_dir": "/app/data/datasets/ds_01KW3XNWJN25Q6DABN8YE899P4"
   }
 }
