@@ -50,19 +50,16 @@ providers:
 
   groq:
     display_name: "Groq"
+    client_class: "src.rag.clients.GroqClient"
     base_url: "https://api.groq.com/openai/v1"
     env_key: "GROQ_API_KEY"
-    client_class: "src.rag.clients.GroqClient"
+    # free_tier_rpm: 30
 
 # -----------------------------------------------------------------------------
 # MODEL CATALOGUE
 # Ordered by: provider → capability tier (pro → standard → lite/flash)
 # -----------------------------------------------------------------------------
 models:
-
-  # ---------------------------------------------------------------------------
-  # GOOGLE GEMINI
-  # ---------------------------------------------------------------------------
   # ---------------------------------------------------------------------------
   # GOOGLE GEMINI — 3.1 FLASH-LITE (High-Speed, Cost-Sensitive Scalable Intelligence)
   # ---------------------------------------------------------------------------
@@ -329,11 +326,10 @@ models:
   # ---------------------------------------------------------------------------
   # GROQ  (optional — free tier, extremely fast inference)
   # ---------------------------------------------------------------------------
-
-  - id: llama-3.1-70b-versatile
-    display_name: "Llama 3.1 70B (Groq)"
+    id: gpt-oss-120b
+    display_name: "GPT-OSS 120B (Groq)"
     provider: groq
-    model_name: "llama-3.1-70b-versatile"
+    model_name: "openai/gpt-oss-120b"
     context_window: 131072
     max_output_tokens: 8192
     cost_input_per_1k: 0.000590
@@ -342,15 +338,19 @@ models:
     supports_json_mode: true
     recommended_for:
       - rag_pipeline
+      - judge
+      - dataset_generation
     rate_limit_rpm: 30
-    rate_limit_tpm: 131072           # Free tier
-    enabled: false
+    rate_limit_tpm: 131072
+    enabled: true
     tags:
       - groq
-      - llama
-      - meta
-      - fast-inference
-      - optional
+      - gpt-oss
+      - reasoning-model
+      - recommended-rag
+      - recommended-judge
+      - free
+
 
   - id: llama-3.1-8b-instant
     display_name: "Llama 3.1 8B Instant (Groq)"
@@ -364,6 +364,7 @@ models:
     supports_json_mode: true
     recommended_for:
       - rag_pipeline                 # Ultra-fast baseline — sub-100ms
+      - dataset_generation
     rate_limit_rpm: 30
     rate_limit_tpm: 131072
     enabled: false
@@ -372,8 +373,7 @@ models:
       - llama
       - meta
       - ultra-fast
-      - ultra-low-cost
-      - optional
+      - free
 
   - id: mixtral-8x7b-32768
     display_name: "Mixtral 8x7B (Groq)"

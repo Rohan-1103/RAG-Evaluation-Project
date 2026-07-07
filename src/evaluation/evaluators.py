@@ -375,7 +375,7 @@ def build_all_evaluators(
             evaluator = evaluator_cls(
                 judge_config=settings.judge,
                 eval_config=eval_config,
-                gemini_api_key=settings.gemini.api_key,
+                # gemini_api_key=settings.gemini.api_key,
             )
             evaluators[metric_name] = evaluator
             logger.debug(

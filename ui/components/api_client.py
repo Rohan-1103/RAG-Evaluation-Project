@@ -96,6 +96,30 @@ class APIClient:
 
     def health(self) -> dict[str, Any]:
         return self._request("GET", "/health")
+    
+    # ------------------------------------------------------------------
+    # Models
+    # ------------------------------------------------------------------
+
+    def list_models(
+        self,
+        role: str | None = None,
+        provider: str | None = None,
+    ) -> dict[str, Any]:
+        params = {
+            k: v
+            for k, v in {
+                "role": role,
+                "provider": provider,
+            }.items()
+            if v is not None
+        }
+
+        return self._request(
+            "GET",
+            "/api/v1/models",
+            params=params,
+        )
 
     # ------------------------------------------------------------------
     # Ingestion

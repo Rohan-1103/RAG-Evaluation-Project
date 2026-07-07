@@ -156,11 +156,21 @@ else:
                 index=default_collection_idx,
             )
 
-            model_id = st.text_input(
-                "RAG model ID",
-                value="gemini-2.0-flash",
-                help="Model ID from models.yaml, e.g. gemini-2.0-flash.",
-            )
+            try:
+                models_resp = client.list_models(role="rag_pipeline")
+                model_lookup = {
+                    f"{m['provider'].title()} · {m['display_name']}": m["id"]
+                    for m in models_resp["models"]
+                }
+            except APIError:
+                model_lookup = {}
+            
+            if model_lookup:
+                model_label = st.selectbox("RAG model", options=list(model_lookup.keys()))
+                model_id = model_lookup[model_label]
+            else:
+                st.warning("Could not load model list — falling back to manual entry.")
+                model_id = st.text_input("RAG model ID", value="gemini-2.0-flash")
 
         with col2:
             top_k = st.slider("Top-K retrieval", min_value=1, max_value=20, value=5)

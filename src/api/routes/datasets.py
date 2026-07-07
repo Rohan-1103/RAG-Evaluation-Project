@@ -518,7 +518,7 @@ async def generate_dataset(
             temperature=request.temperature,
         ),
         dataset_gen_config=settings.dataset_gen,
-        gemini_api_key=settings.gemini.api_key,
+        # gemini_api_key=settings.gemini.api_key,
     )
 
     try:

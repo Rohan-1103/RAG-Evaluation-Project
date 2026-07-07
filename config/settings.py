@@ -62,6 +62,18 @@ EmbeddingProvider = Literal["google", "huggingface"]
 # a module that only needs eval config receives EvalConfig, not all of Settings.
 # ===========================================================================
 
+class GroqConfig(BaseSettings):
+    """Groq LLM provider configuration. Optional — opt-in, unlike Gemini."""
+
+    model_config = SettingsConfigDict(
+        env_prefix="GROQ_", env_file=str(_ENV_FILE),
+        env_file_encoding="utf-8", frozen=True, extra="ignore",
+    )
+
+    api_key: Annotated[
+        str,
+        Field(default="", description="Groq API key. Optional — leave blank if unused."),
+    ] = ""
 
 class GeminiConfig(BaseSettings):
     """Google Gemini LLM provider configuration."""
@@ -599,6 +611,7 @@ class Settings(BaseSettings):
     streamlit_port: Annotated[PositiveInt, Field(default=8501)]
 
     # --- Sub-configs (composed, not inherited) ---
+    groq: GroqConfig = Field(default_factory=GroqConfig)
     gemini: GeminiConfig = Field(default_factory=GeminiConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     chroma: ChromaConfig = Field(default_factory=ChromaConfig)

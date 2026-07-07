@@ -156,18 +156,27 @@ class GeminiDatasetGenerator(BaseDatasetGenerator):
         )
     """
 
+    # def __init__(
+    #     self,
+    #     config: GeneratorConfig,
+    #     dataset_gen_config: DatasetGenConfig,
+    #     gemini_api_key: str,
+    # ) -> None:
+    #     super().__init__(config)
+    #     self._dataset_gen_config = dataset_gen_config
+    #     self._api_key = gemini_api_key
+    #     self._model: Any = None     # google.generativeai.GenerativeModel
+
+    #     self._initialise_model()
+    
+        # NEW
     def __init__(
         self,
         config: GeneratorConfig,
         dataset_gen_config: DatasetGenConfig,
-        gemini_api_key: str,
     ) -> None:
         super().__init__(config)
-        self._dataset_gen_config = dataset_gen_config
-        self._api_key = gemini_api_key
-        self._model: Any = None     # google.generativeai.GenerativeModel
-
-        self._initialise_model()
+        self._dataset_gen_config = dataset_gen_config    
 
     # ------------------------------------------------------------------
     # Factory
@@ -192,10 +201,10 @@ class GeminiDatasetGenerator(BaseDatasetGenerator):
             n_pairs_per_chunk=settings.dataset_gen.max_pairs_per_chunk,
             temperature=settings.dataset_gen.temperature,
         )
+        # NEW
         return cls(
             config=generator_config,
             dataset_gen_config=settings.dataset_gen,
-            gemini_api_key=settings.gemini.api_key,
         )
 
     # ------------------------------------------------------------------
@@ -450,41 +459,60 @@ class GeminiDatasetGenerator(BaseDatasetGenerator):
 
     #     return text, input_tokens, output_tokens
     
-    @retry(
-    retry=retry_if_exception_type(Exception),
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=2, min=4, max=60),
-    reraise=True,
-)
-    def _call_gemini_api(self, prompt: str) -> tuple[str, int, int]:
-        """
-        Make a single Gemini API call with tenacity retry.
+#     @retry(
+#     retry=retry_if_exception_type(Exception),
+#     stop=stop_after_attempt(3),
+#     wait=wait_exponential(multiplier=2, min=4, max=60),
+#     reraise=True,
+# )
+#     def _call_gemini_api(self, prompt: str) -> tuple[str, int, int]:
+#         """
+#         Make a single Gemini API call with tenacity retry.
 
-        Returns (response_text, input_tokens, output_tokens).
-        The @retry decorator handles:
-          - 429 rate limit errors (waits exponentially: 2s, 4s, 8s...)
-          - 503 service unavailable
-          - Network timeouts
-        Raises on all other errors (reraise=True).
-        """
-        response = self._model.models.generate_content(
-            model=self._dataset_gen_config.model,
-            contents=prompt,
-            config=self._gen_config,
-        )
-        input_tokens = 0
-        output_tokens = 0
-        if response.usage_metadata:
-            input_tokens = response.usage_metadata.prompt_token_count or 0
-            output_tokens = response.usage_metadata.candidates_token_count or 0
-        text = response.text or ""
-        if not text.strip():
+#         Returns (response_text, input_tokens, output_tokens).
+#         The @retry decorator handles:
+#           - 429 rate limit errors (waits exponentially: 2s, 4s, 8s...)
+#           - 503 service unavailable
+#           - Network timeouts
+#         Raises on all other errors (reraise=True).
+#         """
+#         response = self._model.models.generate_content(
+#             model=self._dataset_gen_config.model,
+#             contents=prompt,
+#             config=self._gen_config,
+#         )
+#         input_tokens = 0
+#         output_tokens = 0
+#         if response.usage_metadata:
+#             input_tokens = response.usage_metadata.prompt_token_count or 0
+#             output_tokens = response.usage_metadata.candidates_token_count or 0
+#         text = response.text or ""
+#         if not text.strip():
+#             raise ChunkGenerationError(
+#                 chunk_index=0,
+#                 source_file="unknown",
+#                 reason="Gemini returned empty response.",
+#             )
+#         return text, input_tokens, output_tokens
+
+    # NEW
+    def _call_gemini_api(self, prompt: str) -> tuple[str, int, int]:
+        from src.rag.clients import LLMClientError, get_llm_client
+        try:
+            result = get_llm_client(self._dataset_gen_config.model).generate(
+                model_id=self._dataset_gen_config.model,
+                prompt=prompt,
+                temperature=self._config.temperature,
+                max_output_tokens=2048,
+            )
+            return result.text, result.input_tokens, result.output_tokens
+        except LLMClientError as exc:
             raise ChunkGenerationError(
                 chunk_index=0,
                 source_file="unknown",
-                reason="Gemini returned empty response.",
-            )
-        return text, input_tokens, output_tokens
+                reason=str(exc),
+                original_exception=exc,
+            ) from exc
     
 
     # ------------------------------------------------------------------

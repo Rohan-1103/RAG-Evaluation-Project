@@ -463,7 +463,7 @@ def _register_routers(app: FastAPI) -> None:
     is a one-line addition to this function with no other ripple
     effects.
     """
-    from src.api.routes import compare, datasets, evaluate, ingest
+    from src.api.routes import compare, datasets, evaluate, ingest, models
 
     app.include_router(
         ingest.router, prefix="/api/v1/ingest", tags=["ingestion"]
@@ -476,6 +476,9 @@ def _register_routers(app: FastAPI) -> None:
     )
     app.include_router(
         compare.router, prefix="/api/v1/compare", tags=["comparison"]
+    )
+    app.include_router(
+        models.router, prefix="/api/v1/models", tags=["models"]
     )
 
     @app.get("/health", tags=["health"])

@@ -310,11 +310,29 @@ else:
                 index=default_collection_idx,
             )
 
-            model_ids_raw = st.text_input(
-                "Model IDs (comma-separated)",
-                placeholder="gemini-2.0-flash, gemini-1.5-flash-8b",
-                help="Up to 10 models, each ID must be unique.",
-            )
+            try:
+                models_resp = client.list_models(role="rag_pipeline")
+                available_models = {
+                    f"{m['provider'].title()} · {m['display_name']}": m["id"]
+                    for m in models_resp["models"]
+                }
+            except APIError:
+                available_models = {}
+            
+            if available_models:
+                selected_labels = st.multiselect(
+                    "Models to compare",
+                    options=list(available_models.keys()),
+                    help="Select up to 10 models. Mix providers freely.",
+                )
+                model_ids = [available_models[label] for label in selected_labels]
+            else:
+                st.warning("Could not load model list — falling back to manual entry.")
+                model_ids_raw = st.text_input(
+                    "Model IDs (comma-separated)",
+                    placeholder="gemini-3.1-flash-lite, gpt-oss-120b",
+                )
+                model_ids = [m.strip() for m in model_ids_raw.split(",") if m.strip()]
 
             dataset_name_override = st.text_input(
                 "Comparison label (optional)",
@@ -340,8 +358,11 @@ else:
         submitted = st.form_submit_button("▶️ Run comparison", type="primary")
 
     if submitted:
+    # model_ids is already computed above from either:
+    #   - multiselect (available_models populated): list of registry IDs
+    #   - text input fallback (API unreachable): parsed from comma-separated raw string
+    # Either way, model_ids is ready here — no re-parsing needed.
         try:
-            model_ids = [m.strip() for m in model_ids_raw.split(",") if m.strip()]
             top_k_values = _parse_csv_list(top_k_raw, int)
             temperatures = _parse_csv_list(temperatures_raw, float)
         except ValueError as exc:
@@ -351,7 +372,7 @@ else:
             temperatures = None
 
         if not model_ids:
-            st.error("Enter at least one model ID.")
+            st.error("Select at least one model to compare.")
         else:
             errors = _validate_grid_inputs(model_ids, top_k_values, temperatures)
             grid_size = (
@@ -369,8 +390,7 @@ else:
                         f"⚠️ This grid expands to {grid_size} model runs, "
                         f"above the typical default cap "
                         f"({_SOFT_GRID_WARNING_THRESHOLD}). The backend may "
-                        f"reject this request — consider reducing the number "
-                        f"of models, top_k values, or temperatures."
+                        f"reject this request."
                     )
 
                 payload: dict[str, Any] = {
@@ -386,8 +406,7 @@ else:
 
                 with st.spinner(
                     f"Running {grid_size} model config(s) against "
-                    f"{selected_dataset['total_pairs']} pair(s)... "
-                    f"this can take a while for larger grids."
+                    f"{selected_dataset['total_pairs']} pair(s)..."
                 ):
                     try:
                         matrix = client.run_comparison(payload)
@@ -400,6 +419,68 @@ else:
                         )
                     except APIError as exc:
                         st.error(f"Comparison failed: {exc.detail}")
+                        
+    # if submitted:
+    #     try:
+    #         model_ids = [m.strip() for m in model_ids_raw.split(",") if m.strip()]
+    #         top_k_values = _parse_csv_list(top_k_raw, int)
+    #         temperatures = _parse_csv_list(temperatures_raw, float)
+    #     except ValueError as exc:
+    #         st.error(str(exc))
+    #         model_ids = []
+    #         top_k_values = None
+    #         temperatures = None
+
+    #     if not model_ids:
+    #         st.error("Enter at least one model ID.")
+    #     else:
+    #         errors = _validate_grid_inputs(model_ids, top_k_values, temperatures)
+    #         grid_size = (
+    #             len(model_ids)
+    #             * len(top_k_values or [1])
+    #             * len(temperatures or [1])
+    #         )
+
+    #         if errors:
+    #             for err in errors:
+    #                 st.error(err)
+    #         else:
+    #             if grid_size > _SOFT_GRID_WARNING_THRESHOLD:
+    #                 st.warning(
+    #                     f"⚠️ This grid expands to {grid_size} model runs, "
+    #                     f"above the typical default cap "
+    #                     f"({_SOFT_GRID_WARNING_THRESHOLD}). The backend may "
+    #                     f"reject this request — consider reducing the number "
+    #                     f"of models, top_k values, or temperatures."
+    #                 )
+
+    #             payload: dict[str, Any] = {
+    #                 "dataset_id": selected_dataset["id"],
+    #                 "collection_name": collection_name,
+    #                 "model_ids": model_ids,
+    #                 "top_k_values": top_k_values,
+    #                 "temperatures": temperatures,
+    #                 "score_threshold": score_threshold,
+    #                 "max_output_tokens": max_output_tokens,
+    #                 "dataset_name_override": dataset_name_override.strip() or None,
+    #             }
+
+    #             with st.spinner(
+    #                 f"Running {grid_size} model config(s) against "
+    #                 f"{selected_dataset['total_pairs']} pair(s)... "
+    #                 f"this can take a while for larger grids."
+    #             ):
+    #                 try:
+    #                     matrix = client.run_comparison(payload)
+    #                     st.session_state["selected_comparison_detail"] = matrix
+    #                     st.success(
+    #                         f"✅ Comparison complete — "
+    #                         f"{matrix['n_models']} model(s) ranked. "
+    #                         f"Best: {matrix['best_model_id']} "
+    #                         f"({matrix['best_composite_score']:.2f}/5.0)"
+    #                     )
+    #                 except APIError as exc:
+    #                     st.error(f"Comparison failed: {exc.detail}")
 
 
 # ===========================================================================

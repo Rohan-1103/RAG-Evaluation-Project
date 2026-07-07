@@ -145,29 +145,40 @@ class BaseEvaluator(ABC):
       evaluate() and aevaluate() are safe to call concurrently.
     """
 
+    # def __init__(
+    #     self,
+    #     judge_config: JudgeConfig,
+    #     eval_config: Any,          # EvalConfig from config/__init__.py
+    #     gemini_api_key: str,
+    # ) -> None:
+    #     """
+    #     Initialise the evaluator.
+
+    #     Args:
+    #         judge_config:   JudgeConfig from Settings — controls model,
+    #                         temperature, retry behaviour, score thresholds.
+    #         eval_config:    EvalConfig loaded from eval.yaml — provides
+    #                         the prompt template and rubric for this metric.
+    #         gemini_api_key: Gemini API key for judge LLM calls.
+    #     """
+    #     self._judge_config = judge_config
+    #     self._eval_config = eval_config
+    #     self._api_key = gemini_api_key
+    #     # self._model: Any = None       # google.generativeai.GenerativeModel
+    #     self._metric_config: Any = None   # MetricConfig from eval.yaml
+
+    #     # self._initialise_model()
+    #     self._load_metric_config()
+    
+    # NEW
     def __init__(
         self,
         judge_config: JudgeConfig,
-        eval_config: Any,          # EvalConfig from config/__init__.py
-        gemini_api_key: str,
+        eval_config: Any,
     ) -> None:
-        """
-        Initialise the evaluator.
-
-        Args:
-            judge_config:   JudgeConfig from Settings — controls model,
-                            temperature, retry behaviour, score thresholds.
-            eval_config:    EvalConfig loaded from eval.yaml — provides
-                            the prompt template and rubric for this metric.
-            gemini_api_key: Gemini API key for judge LLM calls.
-        """
         self._judge_config = judge_config
         self._eval_config = eval_config
-        self._api_key = gemini_api_key
-        self._model: Any = None       # google.generativeai.GenerativeModel
-        self._metric_config: Any = None   # MetricConfig from eval.yaml
-
-        self._initialise_model()
+        self._metric_config: Any = None
         self._load_metric_config()
 
         logger.debug(
@@ -345,32 +356,32 @@ class BaseEvaluator(ABC):
     #             f"judge model '{self._judge_config.model}': {exc}"
     #         ) from exc
     
-    def _initialise_model(self) -> None:
-        """
-            Configure Gemini client and create the judge model instance.
+    # def _initialise_model(self) -> None:
+    #     """
+    #         Configure Gemini client and create the judge model instance.
 
-            Called once at construction. Judge temperature is always 0.0
-            for deterministic, reproducible scoring — the JudgeConfig
-            validator enforces this but we log a warning if it's not 0.
-            """
-        try:
-            from google import genai
-            from google.genai import types
-            client = genai.Client(api_key=self._api_key)
-            self._model = client
-            self._gen_config = types.GenerateContentConfig(
-                temperature=self._judge_config.temperature,
-                max_output_tokens=self._eval_config.judge.max_response_tokens,
-            )
-        except ImportError as exc:
-            raise ImportError(
-                "google-genai is not installed. Run: pip install google-genai"
-            ) from exc
-        except Exception as exc:
-            raise RuntimeError(
-                f"{self.__class__.__name__}: Failed to initialise "
-                f"judge model '{self._judge_config.model}': {exc}"
-            ) from exc
+    #         Called once at construction. Judge temperature is always 0.0
+    #         for deterministic, reproducible scoring — the JudgeConfig
+    #         validator enforces this but we log a warning if it's not 0.
+    #         """
+    #     try:
+    #         from google import genai
+    #         from google.genai import types
+    #         client = genai.Client(api_key=self._api_key)
+    #         self._model = client
+    #         self._gen_config = types.GenerateContentConfig(
+    #             temperature=self._judge_config.temperature,
+    #             max_output_tokens=self._eval_config.judge.max_response_tokens,
+    #         )
+    #     except ImportError as exc:
+    #         raise ImportError(
+    #             "google-genai is not installed. Run: pip install google-genai"
+    #         ) from exc
+    #     except Exception as exc:
+    #         raise RuntimeError(
+    #             f"{self.__class__.__name__}: Failed to initialise "
+    #             f"judge model '{self._judge_config.model}': {exc}"
+    #         ) from exc
 
     def _load_metric_config(self) -> None:
         """
@@ -535,42 +546,24 @@ class BaseEvaluator(ABC):
 
     #     return text, input_tokens, output_tokens
     
-    @retry(
-    retry=retry_if_exception_type(Exception),
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=2, min=2, max=30),
-    reraise=True,
-)
+    # NEW
     def _call_judge_api(self, prompt: str) -> tuple[str, int, int]:
-        response = self._model.models.generate_content(
-            model=self._judge_config.model,
-            contents=prompt,
-            config=self._gen_config,
-        )
-        input_tokens = 0
-        output_tokens = 0
-        """
-        Single Gemini API call with tenacity exponential backoff.
-
-        Retries on any exception:
-          - 429 rate limit (most common on free tier)
-          - 503 service unavailable
-          - Network timeout
-
-        Returns (response_text, input_tokens, output_tokens).
-        Raises on non-retriable errors (reraise=True) after 3 attempts.
-        """
-        if response.usage_metadata:
-            input_tokens = response.usage_metadata.prompt_token_count or 0
-            output_tokens = response.usage_metadata.candidates_token_count or 0
-        text = response.text or ""
-        if not text.strip():
+        from src.rag.clients import LLMClientError, get_llm_client
+        try:
+            result = get_llm_client(self._judge_config.model).generate(
+                model_id=self._judge_config.model,
+                prompt=prompt,
+                temperature=self._judge_config.temperature,
+                max_output_tokens=self._eval_config.judge.max_response_tokens,
+            )
+            return result.text, result.input_tokens, result.output_tokens
+        except LLMClientError as exc:
             raise EvaluatorError(
                 evaluator=self.__class__.__name__,
                 metric=self.metric_name,
-                reason="Judge returned empty response.",
-            )
-        return text, input_tokens, output_tokens
+                reason=str(exc),
+                original_exception=exc,
+            ) from exc
     
 
     # ------------------------------------------------------------------
@@ -876,23 +869,41 @@ class BaseEvaluator(ABC):
     # Factory
     # ------------------------------------------------------------------
 
+    # @classmethod
+    # def from_settings(cls, settings: Settings) -> BaseEvaluator:
+    #     """
+    #     Standard factory — construct from application Settings.
+
+    #     Loads EvalConfig from eval.yaml automatically.
+    #     Subclasses inherit this factory.
+
+    #     Usage:
+    #         evaluator = FaithfulnessEvaluator.from_settings(settings)
+    #     """
+    #     from config import get_eval_config
+
+    #     return cls(
+    #         judge_config=settings.judge,
+    #         eval_config=get_eval_config(),
+    #         gemini_api_key=settings.gemini.api_key,
+    #     )
+    
+    # NEW
     @classmethod
     def from_settings(cls, settings: Settings) -> BaseEvaluator:
         """
         Standard factory — construct from application Settings.
-
+    
         Loads EvalConfig from eval.yaml automatically.
         Subclasses inherit this factory.
-
+    
         Usage:
-            evaluator = FaithfulnessEvaluator.from_settings(settings)
+        evaluator = FaithfulnessEvaluator.from_settings(settings)
         """
         from config import get_eval_config
-
         return cls(
             judge_config=settings.judge,
             eval_config=get_eval_config(),
-            gemini_api_key=settings.gemini.api_key,
         )
 
     # ------------------------------------------------------------------

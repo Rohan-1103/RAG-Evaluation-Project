@@ -167,10 +167,10 @@ class RAGPipeline:
         self._embedding_manager = embedding_manager
         self._vector_store = vector_store
         self._settings = settings
-        self._model_cache: dict[str, Any] = {}
+        # self._model_cache: dict[str, Any] = {}
         # model_id → google.generativeai.GenerativeModel
 
-        self._configure_gemini()
+        # self._configure_gemini()
 
         logger.info(
             f"RAGPipeline initialised. "
@@ -182,32 +182,52 @@ class RAGPipeline:
     # Factory
     # ------------------------------------------------------------------
 
+    # @classmethod
+    # def from_settings(
+    #     cls,
+    #     settings: Settings,
+    #     vector_store: BaseVectorStore | None = None,
+    # ) -> RAGPipeline:
+    #     """
+    #     Standard factory — build RAGPipeline from application Settings.
+
+    #     Args:
+    #         settings:     Application Settings from get_settings().
+    #         vector_store: Optional pre-built vector store.
+    #                       If None, builds ChromaVectorStore from settings.
+
+    #     Returns:
+    #         Fully wired RAGPipeline instance.
+    #     """
+    #     embedding_manager = EmbeddingManager(settings.embedding)
+
+    #     if vector_store is None:
+    #         from src.vectorstore.chroma import ChromaVectorStore
+    #         vector_store = ChromaVectorStore(
+    #             config=settings.chroma,
+    #             embedding_manager=embedding_manager,
+    #         )
+
+    #     return cls(
+    #         embedding_manager=embedding_manager,
+    #         vector_store=vector_store,
+    #         settings=settings,
+    #     )
+    
+    # NEW — no Gemini-specific setup needed, client factory handles it lazily
     @classmethod
     def from_settings(
         cls,
         settings: Settings,
         vector_store: BaseVectorStore | None = None,
     ) -> RAGPipeline:
-        """
-        Standard factory — build RAGPipeline from application Settings.
-
-        Args:
-            settings:     Application Settings from get_settings().
-            vector_store: Optional pre-built vector store.
-                          If None, builds ChromaVectorStore from settings.
-
-        Returns:
-            Fully wired RAGPipeline instance.
-        """
         embedding_manager = EmbeddingManager(settings.embedding)
-
         if vector_store is None:
             from src.vectorstore.chroma import ChromaVectorStore
             vector_store = ChromaVectorStore(
                 config=settings.chroma,
                 embedding_manager=embedding_manager,
             )
-
         return cls(
             embedding_manager=embedding_manager,
             vector_store=vector_store,
@@ -281,30 +301,30 @@ class RAGPipeline:
 
     #     return self._model_cache[cache_key]
     
-    def _configure_gemini(self) -> None:
-        """Configure Gemini API key once at pipeline construction."""
-        try:
-            from google import genai
-            self._genai_client = genai.Client(
-                api_key=self._settings.gemini.api_key
-            )
-        except ImportError as exc:
-            raise ImportError(
-                "google-genai is not installed. Run: pip install google-genai"
-            ) from exc
+    # def _configure_gemini(self) -> None:
+    #     """Configure Gemini API key once at pipeline construction."""
+    #     try:
+    #         from google import genai
+    #         self._genai_client = genai.Client(
+    #             api_key=self._settings.gemini.api_key
+    #         )
+    #     except ImportError as exc:
+    #         raise ImportError(
+    #             "google-genai is not installed. Run: pip install google-genai"
+    #         ) from exc
 
-    def _get_model(self, model_id: str, temperature: float, max_output_tokens: int) -> Any:
-        """Returns (client, config) tuple cached by key."""
-        from google.genai import types
-        cache_key = f"{model_id}|{temperature}|{max_output_tokens}"
-        if cache_key not in self._model_cache:
-            self._model_cache[cache_key] = types.GenerateContentConfig(
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                system_instruction=_SYSTEM_INSTRUCTION,
-            )
-            logger.debug(f"RAGPipeline: Created config for '{model_id}'")
-        return self._genai_client, self._model_cache[cache_key]
+    # def _get_model(self, model_id: str, temperature: float, max_output_tokens: int) -> Any:
+    #     """Returns (client, config) tuple cached by key."""
+    #     from google.genai import types
+    #     cache_key = f"{model_id}|{temperature}|{max_output_tokens}"
+    #     if cache_key not in self._model_cache:
+    #         self._model_cache[cache_key] = types.GenerateContentConfig(
+    #             temperature=temperature,
+    #             max_output_tokens=max_output_tokens,
+    #             system_instruction=_SYSTEM_INSTRUCTION,
+    #         )
+    #         logger.debug(f"RAGPipeline: Created config for '{model_id}'")
+    #     return self._genai_client, self._model_cache[cache_key]
 
     # ------------------------------------------------------------------
     # Public interfaces
@@ -873,39 +893,62 @@ class RAGPipeline:
 
     #     return text, input_tokens, output_tokens
     
-    @retry(
-    retry=retry_if_exception_type(Exception),
-    stop=stop_after_attempt(5),
-    wait=wait_exponential(multiplier=2, min=4, max=60),
-    reraise=True,
-    )
-    def _call_gemini(
+    # @retry(
+    # retry=retry_if_exception_type(Exception),
+    # stop=stop_after_attempt(5),
+    # wait=wait_exponential(multiplier=2, min=4, max=60),
+    # reraise=True,
+    # )
+    # def _call_gemini(
+    #     self,
+    #     prompt: str,
+    #     model_id: str,
+    #     temperature: float,
+    #     max_output_tokens: int,
+    # ) -> tuple[str, int, int]:
+    #     """
+    #     Make a single Gemini generation API call with retry    
+    #     Returns (answer_text, input_tokens, output_tokens) 
+    #     Decorated with @retry for 429 and 503 handling.
+    #     reraise=True means the final failure propagates to _generate()
+    #     which converts it to an error response.
+    #     """
+    #     client, config = self._get_model(model_id, temperature, max_output_tokens)
+    #     response = client.models.generate_content(
+    #         model=model_id,
+    #         contents=prompt,
+    #         config=config,
+    #     )
+    #     input_tokens = 0
+    #     output_tokens = 0
+    #     if response.usage_metadata:
+    #         input_tokens = response.usage_metadata.prompt_token_count or 0
+    #         output_tokens = response.usage_metadata.candidates_token_count or 0
+    #     text = response.text or ""
+    #     return text, input_tokens, output_tokens
+    
+    # NEW
+    def _call_llm(
         self,
         prompt: str,
         model_id: str,
         temperature: float,
         max_output_tokens: int,
     ) -> tuple[str, int, int]:
-        """
-        Make a single Gemini generation API call with retry    
-        Returns (answer_text, input_tokens, output_tokens) 
-        Decorated with @retry for 429 and 503 handling.
-        reraise=True means the final failure propagates to _generate()
-        which converts it to an error response.
-        """
-        client, config = self._get_model(model_id, temperature, max_output_tokens)
-        response = client.models.generate_content(
-            model=model_id,
-            contents=prompt,
-            config=config,
-        )
-        input_tokens = 0
-        output_tokens = 0
-        if response.usage_metadata:
-            input_tokens = response.usage_metadata.prompt_token_count or 0
-            output_tokens = response.usage_metadata.candidates_token_count or 0
-        text = response.text or ""
-        return text, input_tokens, output_tokens
+        from src.rag.clients import LLMClientError, get_llm_client
+        try:
+            result = get_llm_client(model_id).generate(
+                model_id=model_id,
+                prompt=prompt,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+                system_instruction=_SYSTEM_INSTRUCTION,
+            )
+            return result.text, result.input_tokens, result.output_tokens
+        except LLMClientError as exc:
+            raise RAGPipelineError(
+                reason=str(exc), original_exception=exc
+            ) from exc
 
     def _generate(
         self,
@@ -927,7 +970,8 @@ class RAGPipeline:
         Never raises — failures return an empty answer with refused=True.
         """
         try:
-            text, input_tokens, output_tokens = self._call_gemini(
+            # text, input_tokens, output_tokens = self._call_gemini(
+            text, input_tokens, output_tokens = self._call_llm(
                 prompt=prompt,
                 model_id=model_id,
                 temperature=temperature,
@@ -1108,11 +1152,14 @@ class RAGPipeline:
 
             # Check 4: Model is accessible (skip generation to
             # avoid token cost in warm-up)
-            self._get_model(
-                model_id=resolved_model,
-                temperature=0.0,
-                max_output_tokens=64,
-            )
+            # self._get_model(
+            #     model_id=resolved_model,
+            #     temperature=0.0,
+            #     max_output_tokens=64,
+            # )
+            # NEW
+            from src.rag.clients import get_llm_client
+            get_llm_client(resolved_model)  # validates credentials + registry entry
 
             logger.info("RAGPipeline.warm_up: All checks passed.")
             return True
@@ -1136,7 +1183,7 @@ class RAGPipeline:
             f"RAGPipeline("
             f"embedding='{self.embedding_model}', "
             f"dim={self.embedding_dimension}, "
-            f"cached_models={list(self._model_cache.keys())})"
+            # f"cached_models={list(self._model_cache.keys())})"
         )
 
 # ===========================================================================
