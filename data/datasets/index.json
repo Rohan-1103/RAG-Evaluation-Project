@@ -245,5 +245,24 @@
     "tags": [],
     "version": "1.0.2",
     "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KWW7KNZPTBVP7SAQWGTKG1VB"
+  },
+  "ds_01KWY90JZN42S1EXXD99KXQWK7": {
+    "id": "ds_01KWY90JZN42S1EXXD99KXQWK7",
+    "name": "OptiAgent-DS-1",
+    "description": null,
+    "created_at": "2026-07-07T12:31:57.429243+00:00",
+    "updated_at": "2026-07-07T12:34:41.276654+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "OptiAgent",
+    "source_files": [
+      "OptiAgent.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 10,
+    "evaluated_pairs": 0,
+    "status": "completed",
+    "tags": [],
+    "version": "1.0.1",
+    "dataset_dir": "/app/data/datasets/ds_01KWY90JZN42S1EXXD99KXQWK7"
   }
 }

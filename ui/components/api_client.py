@@ -59,7 +59,7 @@ class APIClient:
     pages call client.run_evaluation(...), never client.post("/api/v1/evaluate/run", ...).
     """
 
-    def __init__(self, base_url: str, timeout: float = 120.0) -> None:
+    def __init__(self, base_url: str, timeout: float = 600.0) -> None:
         self._client = httpx.Client(base_url=base_url.rstrip("/"), timeout=timeout)
 
     def _request(
@@ -262,7 +262,7 @@ def get_api_client() -> APIClient:
     single button click).
     """
     settings = get_settings()
-    return APIClient(base_url=settings.api_base_url)
+    return APIClient(base_url=settings.api_base_url, timeout=600.0)
 
 
 __all__ = ["APIClient", "APIError", "get_api_client"]

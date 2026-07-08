@@ -326,7 +326,7 @@ models:
   # ---------------------------------------------------------------------------
   # GROQ  (optional — free tier, extremely fast inference)
   # ---------------------------------------------------------------------------
-    id: gpt-oss-120b
+  - id: gpt-oss-120b
     display_name: "GPT-OSS 120B (Groq)"
     provider: groq
     model_name: "openai/gpt-oss-120b"
@@ -351,6 +351,58 @@ models:
       - recommended-judge
       - free
 
+  - id: gpt-oss-20b
+    display_name: "GPT-OSS 20B (Groq)"
+    provider: groq
+    model_name: "openai/gpt-oss-20b"
+    context_window: 131072
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.0
+    cost_output_per_1k: 0.0
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline
+      - dataset_generation
+    rate_limit_rpm: 30
+    rate_limit_rpd: 1000
+    rate_limit_tpm: 8000
+    enabled: true
+    tags:
+      - groq
+      - gpt-oss
+      - reasoning-model
+      - recommended-rag
+      - recommended-judge
+      - fast
+      - free
+
+  - id: qwen3-32b
+    display_name: "Qwen 3.6 27B (Groq)"
+    provider: groq
+    model_name: "qwen/qwen3-32b"
+    context_window: 131072
+    max_output_tokens: 8192
+    cost_input_per_1k: 0.0
+    cost_output_per_1k: 0.0
+    supports_system_prompt: true
+    supports_json_mode: true
+    recommended_for:
+      - rag_pipeline
+      - judge
+      - dataset_generation
+    rate_limit_rpm: 60
+    rate_limit_rpd: 1000
+    rate_limit_tpm: 6000
+    enabled: true
+    tags:
+      - groq
+      - qwen
+      - reasoning-model
+      - recommended-rag
+      - recommended-judge
+      - high-rpm
+      - free
 
   - id: llama-3.1-8b-instant
     display_name: "Llama 3.1 8B Instant (Groq)"
