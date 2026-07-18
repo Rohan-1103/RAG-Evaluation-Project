@@ -62,10 +62,46 @@ class APIClient:
     def __init__(self, base_url: str, timeout: float = 600.0) -> None:
         self._client = httpx.Client(base_url=base_url.rstrip("/"), timeout=timeout)
 
+
+# FIND _request() method and replace it entirely:
     def _request(
         self, method: str, path: str, **kwargs: Any
     ) -> dict[str, Any]:
-        response = self._client.request(method, path, **kwargs)
+        try:
+            response = self._client.request(method, path, **kwargs)
+        except httpx.ReadTimeout:
+            raise APIError(
+                status_code=408,
+                detail=(
+                    "The request timed out waiting for the backend to respond. "
+                    "This usually means the comparison job has too many model "
+                    "configurations for the free-tier API rate limits to complete "
+                    "within the allowed time window.\n\n"
+                    "Try one of these:\n"
+                    "• Reduce the number of models (3 or fewer recommended)\n"
+                    "• Use a single top_k value instead of multiple\n"
+                    "• Run models one at a time via the Evaluate page\n"
+                    "• Wait a few minutes for rate limit windows to reset"
+                ),
+                error_type="request_timeout",
+            )
+        except httpx.ConnectError:
+            raise APIError(
+                status_code=503,
+                detail=(
+                    "Cannot connect to the backend server. "
+                    "Ensure the API is running: "
+                    "uvicorn src.api.app:create_app --factory --port 8000"
+                ),
+                error_type="connection_error",
+            )
+        except httpx.TimeoutException as exc:
+            raise APIError(
+                status_code=408,
+                detail=f"Request timed out: {exc}",
+                error_type="request_timeout",
+            )
+
         if response.status_code >= 400:
             try:
                 body = response.json()
@@ -79,9 +115,21 @@ class APIClient:
         return response.json()
 
     def _request_bytes(
-        self, method: str, path: str, **kwargs: Any
-    ) -> bytes:
-        response = self._client.request(method, path, **kwargs)
+    self, method: str, path: str, **kwargs: Any) -> bytes:
+        try:
+            response = self._client.request(method, path, **kwargs)
+        except httpx.ReadTimeout:
+            raise APIError(
+                status_code=408,
+                detail="Export request timed out. Try again in a moment.",
+                error_type="request_timeout",
+            )
+        except httpx.ConnectError:
+            raise APIError(
+                status_code=503,
+                detail="Cannot connect to the backend server.",
+                error_type="connection_error",
+            )
         if response.status_code >= 400:
             raise APIError(
                 status_code=response.status_code,

@@ -191,6 +191,7 @@ class LLMModelConfig(BaseModel):
     supports_json_mode: bool
     recommended_for: list[str] = Field(default_factory=list)
     rate_limit_rpm: Annotated[int, Field(ge=0)] = 0
+    rate_limit_rpd: Annotated[int, Field(ge=0)] = 0
     rate_limit_tpm: Annotated[int, Field(ge=0)] = 0
     enabled: bool = True
     tags: list[str] = Field(default_factory=list)

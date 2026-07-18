@@ -55,6 +55,12 @@ providers:
     env_key: "GROQ_API_KEY"
     # free_tier_rpm: 30
 
+  openrouter:
+    display_name: "OpenRouter"
+    client_class: "src.rag.clients.OpenRouterClient"
+    base_url: "https://openrouter.ai/api/v1"
+    env_key: "OPENROUTER_API_KEY"
+
 # -----------------------------------------------------------------------------
 # MODEL CATALOGUE
 # Ordered by: provider → capability tier (pro → standard → lite/flash)
@@ -447,6 +453,97 @@ models:
       - mistral
       - moe
       - optional
+
+# ── OpenRouter free models ──────────────────────────────────────────
+
+  - id: nemotron-super-49b
+    display_name: "NVIDIA Nemotron 3 Super 49B (free)"
+    provider: openrouter
+    model_name: "nvidia/nemotron-3-super-49b-instruct:free"
+    context_window: 1000000
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.0
+    cost_output_per_1k: 0.0
+    supports_system_prompt: true
+    supports_json_mode: false
+    recommended_for:
+      - rag_pipeline
+      - judge
+      - dataset_generation
+    rate_limit_rpm: 20
+    enabled: true
+    tags:
+      - openrouter
+      - nvidia
+      - nemotron
+      - free
+      - recommended-rag
+      - recommended-judge
+
+  - id: nemotron-nano-12b
+    display_name: "NVIDIA Nemotron Nano 12B (free)"
+    provider: openrouter
+    model_name: "nvidia/llama-3.1-nemotron-nano-8b-v1:free"
+    context_window: 131072
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.0
+    cost_output_per_1k: 0.0
+    supports_system_prompt: true
+    supports_json_mode: false
+    recommended_for:
+      - rag_pipeline
+      - dataset_generation
+    rate_limit_rpm: 20
+    enabled: true
+    tags:
+      - openrouter
+      - nvidia
+      - nemotron
+      - fast
+      - free
+
+  - id: qwen3-next-80b
+    display_name: "Qwen3 Next 80B A3B (free)"
+    provider: openrouter
+    model_name: "qwen/qwen3-next-80b-a3b-instruct:free"
+    context_window: 262144
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.0
+    cost_output_per_1k: 0.0
+    supports_system_prompt: true
+    supports_json_mode: false
+    recommended_for:
+      - rag_pipeline
+      - judge
+    rate_limit_rpm: 20
+    enabled: true
+    tags:
+      - openrouter
+      - qwen
+      - free
+
+  - id: llama-3.3-70b-or
+    display_name: "Meta Llama 3.3 70B (free)"
+    provider: openrouter
+    model_name: "meta-llama/llama-3.3-70b-instruct:free"
+    context_window: 131072
+    max_output_tokens: 4096
+    cost_input_per_1k: 0.0
+    cost_output_per_1k: 0.0
+    supports_system_prompt: true
+    supports_json_mode: false
+    recommended_for:
+      - rag_pipeline
+      - judge
+      - dataset_generation
+    rate_limit_rpm: 20
+    enabled: true
+    tags:
+      - openrouter
+      - llama
+      - meta
+      - free
+      - recommended-rag
 
 # -----------------------------------------------------------------------------
 # DEFAULT MODEL ASSIGNMENTS

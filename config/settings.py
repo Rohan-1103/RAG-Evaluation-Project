@@ -75,6 +75,33 @@ class GroqConfig(BaseSettings):
         Field(default="", description="Groq API key. Optional — leave blank if unused."),
     ] = ""
 
+class OpenRouterConfig(BaseSettings):
+    """OpenRouter provider config. Optional — opt-in like Groq."""
+
+    model_config = SettingsConfigDict(
+        env_prefix="OPENROUTER_",
+        env_file=str(_ENV_FILE),
+        env_file_encoding="utf-8",
+        frozen=True,
+        extra="ignore",
+    )
+
+    api_key: Annotated[
+        str,
+        Field(default="", description="OpenRouter API key. Optional."),
+    ] = ""
+
+    # Identifies your app in OpenRouter's dashboard/logs.
+    # See: https://openrouter.ai/docs#headers
+    site_url: str = Field(
+        default="http://localhost:8501",
+        description="Your app's URL — sent as HTTP-Referer header.",
+    )
+    app_name: str = Field(
+        default="RAG Eval Bench",
+        description="Your app name — sent as X-Title header.",
+    )
+
 class GeminiConfig(BaseSettings):
     """Google Gemini LLM provider configuration."""
 
@@ -612,6 +639,7 @@ class Settings(BaseSettings):
 
     # --- Sub-configs (composed, not inherited) ---
     groq: GroqConfig = Field(default_factory=GroqConfig)
+    openrouter: OpenRouterConfig = Field(default_factory=OpenRouterConfig)
     gemini: GeminiConfig = Field(default_factory=GeminiConfig)
     embedding: EmbeddingConfig = Field(default_factory=EmbeddingConfig)
     chroma: ChromaConfig = Field(default_factory=ChromaConfig)

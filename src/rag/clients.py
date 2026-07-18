@@ -283,6 +283,132 @@ class GroqClient(BaseLLMClient):
             output_tokens=output_tokens, model_id=model_id, provider="groq",
         )
 
+class OpenRouterClient(BaseLLMClient):
+    """
+    Wraps OpenRouter's OpenAI-compatible endpoint.
+
+    OpenRouter gives access to 200+ models (NVIDIA, Qwen, Llama,
+    Mistral, Claude, GPT-4o) through one API key, including 20+
+    permanently free models (marked with :free suffix in model ID).
+
+    Two required headers distinguish OpenRouter from Groq despite
+    sharing the same OpenAI SDK:
+      HTTP-Referer: your app's URL (for OpenRouter dashboard tracking)
+      X-Title:      your app's name (shown in OpenRouter logs)
+
+    See: https://openrouter.ai/docs#headers
+    """
+
+    _BASE_URL = "https://openrouter.ai/api/v1"
+
+    def __init__(
+        self,
+        api_key: str,
+        site_url: str = "http://localhost:8501",
+        app_name: str = "RAG Eval Bench",
+    ) -> None:
+        try:
+            from openai import OpenAI
+        except ImportError as exc:
+            raise ImportError(
+                "openai is not installed. Run: pip install openai"
+            ) from exc
+
+        self._client = OpenAI(
+            api_key=api_key,
+            base_url=self._BASE_URL,
+            default_headers={
+                "HTTP-Referer": site_url,
+                "X-Title": app_name,
+            },
+        )
+
+    @property
+    def provider_name(self) -> str:
+        return "openrouter"
+
+    @retry(
+        retry=retry_if_exception_type(Exception),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=2, min=2, max=30),
+        reraise=True,
+    )
+    def generate(
+        self,
+        model_id: str,
+        prompt: str,
+        temperature: float = 0.0,
+        max_output_tokens: int = 1024,
+        system_instruction: str | None = None,
+    ) -> LLMGenerationResult:
+        # Resolve actual API model string from registry
+        from config import get_model_registry
+        try:
+            registry_entry = get_model_registry().get_model(model_id)
+            api_model_name = getattr(
+                registry_entry, "model_name", model_id
+            ) or model_id
+        except KeyError:
+            api_model_name = model_id
+
+        messages: list[dict[str, str]] = []
+        if system_instruction:
+            messages.append({"role": "system", "content": system_instruction})
+        messages.append({"role": "user", "content": prompt})
+
+        try:
+            response = self._client.chat.completions.create(
+                model=api_model_name,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_output_tokens,
+            )
+        except Exception as exc:
+            raise LLMClientError(
+                provider="openrouter",
+                model_id=model_id,
+                reason=str(exc),
+                original_exception=exc,
+            ) from exc
+
+        choice = response.choices[0] if response.choices else None
+        text = choice.message.content if choice and choice.message else ""
+
+        if not text or not text.strip():
+            # Same reasoning-model guard as GroqClient
+            usage = response.usage
+            hint = ""
+            if (
+                usage
+                and hasattr(usage, "completion_tokens_details")
+                and usage.completion_tokens_details
+                and getattr(
+                    usage.completion_tokens_details,
+                    "reasoning_tokens", 0
+                )
+            ):
+                hint = (
+                    f" Model used reasoning tokens — "
+                    f"increase max_output_tokens."
+                )
+            raise LLMClientError(
+                provider="openrouter",
+                model_id=model_id,
+                reason=f"Empty response from OpenRouter.{hint}",
+            )
+
+        usage = response.usage
+        input_tokens = usage.prompt_tokens if usage else 0
+        output_tokens = usage.completion_tokens if usage else 0
+
+        return LLMGenerationResult(
+            text=text.strip(),
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            model_id=model_id,
+            provider="openrouter",
+        )
+
 # ===========================================================================
 # FACTORY — single chokepoint every call site uses
 # ===========================================================================
@@ -321,6 +447,21 @@ def get_llm_client(model_id: str) -> BaseLLMClient:
                 ),
             )
         client = GroqClient(api_key=settings.groq.api_key)
+    elif provider == "openrouter":
+        if not settings.openrouter.api_key:
+            raise LLMClientError(
+                provider="openrouter",
+                model_id=model_id,
+                reason=(
+                    "OPENROUTER_API_KEY is not set in .env. "
+                    "Get a free key at https://openrouter.ai/settings/keys"
+                ),
+            )
+        client = OpenRouterClient(
+            api_key=settings.openrouter.api_key,
+            site_url=settings.openrouter.site_url,
+            app_name=settings.openrouter.app_name,
+        )
     else:
         raise LLMClientError(
             provider=provider, model_id=model_id,

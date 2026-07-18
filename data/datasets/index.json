@@ -1,147 +1,33 @@
 {
-  "ds_01KVF2AT51VKXYXERZ0P064MVF": {
-    "id": "ds_01KVF2AT51VKXYXERZ0P064MVF",
-    "name": "Test Dataset",
-    "description": null,
-    "created_at": "2026-06-19T04:30:54.113643+00:00",
-    "updated_at": "2026-06-19T04:30:54.163117+00:00",
+  "ds_01KXT0D4BE291S3XYZB1XSM5GM": {
+    "id": "ds_01KXT0D4BE291S3XYZB1XSM5GM",
+    "name": "Poisoned_Data_DS_!",
+    "description": "Chunks-sampled: 40\nPairs/chunk: 1\nMax pairs: 10\nTemp: 0.40",
+    "created_at": "2026-07-18T07:00:15.342105+00:00",
+    "updated_at": "2026-07-18T07:00:15.352196+00:00",
     "generation_method": "synthetic",
-    "source_collection": "test_collection",
+    "source_collection": "Data_Poison",
     "source_files": [
-      "test_doc.txt"
+      "Pretraining_Data_Poison.pdf"
     ],
     "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 1,
+    "total_pairs": 8,
     "evaluated_pairs": 0,
     "status": "ready",
     "tags": [],
     "version": "1.0.0",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVF2AT51VKXYXERZ0P064MVF"
+    "dataset_dir": "/app/data/datasets/ds_01KXT0D4BE291S3XYZB1XSM5GM"
   },
-  "ds_01KVNTBFGN96YJK8MWZ2P8RQCJ": {
-    "id": "ds_01KVNTBFGN96YJK8MWZ2P8RQCJ",
-    "name": "Smoke Test Dataset",
-    "description": null,
-    "created_at": "2026-06-21T19:26:08.405101+00:00",
-    "updated_at": "2026-06-21T19:26:28.236811+00:00",
+  "ds_01KXT0D6F63RKBHZWKJF1QA75T": {
+    "id": "ds_01KXT0D6F63RKBHZWKJF1QA75T",
+    "name": "Poisoned_Data_DS_!",
+    "description": "Chunks-sampled: 20\nPairs/chunk: 1\nMax pairs: 10\nTemp: 0.40",
+    "created_at": "2026-07-18T07:00:17.510148+00:00",
+    "updated_at": "2026-07-18T07:09:08.002656+00:00",
     "generation_method": "synthetic",
-    "source_collection": "smoke_test_collection",
+    "source_collection": "Data_Poison",
     "source_files": [
-      "smoke_test.txt"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 1,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVNTBFGN96YJK8MWZ2P8RQCJ"
-  },
-  "ds_01KVPMTWAPMQ1EM9NHJYE1VPVK": {
-    "id": "ds_01KVPMTWAPMQ1EM9NHJYE1VPVK",
-    "name": "Smoke Test Dataset",
-    "description": null,
-    "created_at": "2026-06-22T03:08:56.022989+00:00",
-    "updated_at": "2026-06-22T03:09:00.897804+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "smoke_test_collection",
-    "source_files": [
-      "smoke_test.txt"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 1,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPMTWAPMQ1EM9NHJYE1VPVK"
-  },
-  "ds_01KVPMWFTKGWW0GAJ96KZPANCD": {
-    "id": "ds_01KVPMWFTKGWW0GAJ96KZPANCD",
-    "name": "Smoke Test Dataset",
-    "description": null,
-    "created_at": "2026-06-22T03:09:48.755055+00:00",
-    "updated_at": "2026-06-22T03:09:57.359671+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "smoke_test_collection",
-    "source_files": [
-      "smoke_test.txt"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 1,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPMWFTKGWW0GAJ96KZPANCD"
-  },
-  "ds_01KVPNF6E5K98G6JKH1E07EMAZ": {
-    "id": "ds_01KVPNF6E5K98G6JKH1E07EMAZ",
-    "name": "Smoke Test Dataset",
-    "description": null,
-    "created_at": "2026-06-22T03:20:01.733525+00:00",
-    "updated_at": "2026-06-22T03:20:06.978868+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "smoke_test_collection",
-    "source_files": [
-      "smoke_test.txt"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 1,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVPNF6E5K98G6JKH1E07EMAZ"
-  },
-  "ds_01KVTFRFFXYBPB5A21WHFSCRAJ": {
-    "id": "ds_01KVTFRFFXYBPB5A21WHFSCRAJ",
-    "name": "OJT-Report",
-    "description": null,
-    "created_at": "2026-06-23T14:57:12.189464+00:00",
-    "updated_at": "2026-06-23T15:00:15.979478+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "test_collection3",
-    "source_files": [
-      "test_doc.txt"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 1,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVTFRFFXYBPB5A21WHFSCRAJ"
-  },
-  "ds_01KVTSAMSBV5WXHZDNEY9EBHDF": {
-    "id": "ds_01KVTSAMSBV5WXHZDNEY9EBHDF",
-    "name": "POTrack-first-pair",
-    "description": "Chunks-to-sample: 40\nPair per chunk: 2\nMax total pairs: 20\nTemperature: 0.10",
-    "created_at": "2026-06-23T17:44:24.619822+00:00",
-    "updated_at": "2026-06-23T18:00:31.520125+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "POTracker",
-    "source_files": [
-      "POTracker-resaerch.pdf"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 19,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.4",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KVTSAMSBV5WXHZDNEY9EBHDF"
-  },
-  "ds_01KW244SFXSAFX5C0D0R2RZDN8": {
-    "id": "ds_01KW244SFXSAFX5C0D0R2RZDN8",
-    "name": "POT-db1",
-    "description": null,
-    "created_at": "2026-06-26T14:08:08.189237+00:00",
-    "updated_at": "2026-06-26T14:17:38.383842+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "POTracker",
-    "source_files": [
-      "POTracker-resaerch.pdf"
+      "Pretraining_Data_Poison.pdf"
     ],
     "generator_model": "gemini-3.1-flash-lite",
     "total_pairs": 10,
@@ -149,120 +35,6 @@
     "status": "completed",
     "tags": [],
     "version": "1.0.1",
-    "dataset_dir": "/app/data/datasets/ds_01KW244SFXSAFX5C0D0R2RZDN8"
-  },
-  "ds_01KW261V2BE9WD04EE62XSFBVN": {
-    "id": "ds_01KW261V2BE9WD04EE62XSFBVN",
-    "name": "Ask_Dont_Judge",
-    "description": "Sample: 25\nPair/Chunk: 2\nMax pairs: 10\nTemperature: 0.20",
-    "created_at": "2026-06-26T14:41:28.651775+00:00",
-    "updated_at": "2026-06-26T14:53:41.876166+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "ask-dont-judge",
-    "source_files": [
-      "Ask_dont_judge.pdf"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 10,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.3",
-    "dataset_dir": "/app/data/datasets/ds_01KW261V2BE9WD04EE62XSFBVN"
-  },
-  "ds_01KW3W2BR92GHDEM2VFBY74GR2": {
-    "id": "ds_01KW3W2BR92GHDEM2VFBY74GR2",
-    "name": "KARLA-dataset-1",
-    "description": "Chunks to sample: 5\nPairs/chunk: 2\nMax pairs: 10\nTemp: 0.20",
-    "created_at": "2026-06-27T06:25:28.841302+00:00",
-    "updated_at": "2026-06-27T06:43:58.415959+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "KARLA",
-    "source_files": [
-      "KARLA.pdf"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 10,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "/app/data/datasets/ds_01KW3W2BR92GHDEM2VFBY74GR2"
-  },
-  "ds_01KW3XNWJN25Q6DABN8YE899P4": {
-    "id": "ds_01KW3XNWJN25Q6DABN8YE899P4",
-    "name": "KARLA-ds-1",
-    "description": "Sample Chunks: 10\nPairs/chunk: 2\nMax pairs: 5\nTemp: 0.20",
-    "created_at": "2026-06-27T06:53:37.237387+00:00",
-    "updated_at": "2026-06-27T07:00:28.873033+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "KARLA",
-    "source_files": [
-      "KARLA.pdf"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 5,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.2",
-    "dataset_dir": "/app/data/datasets/ds_01KW3XNWJN25Q6DABN8YE899P4"
-  },
-  "ds_01KW72Z48EB6XPT16638E9PXAW": {
-    "id": "ds_01KW72Z48EB6XPT16638E9PXAW",
-    "name": "Gappy-ds-1",
-    "description": "Chunks to sample: 5\nPairs/chunk: 1\nMax Pairs: 5\nTemperature: 0.10",
-    "created_at": "2026-06-28T12:23:46.190632+00:00",
-    "updated_at": "2026-06-28T12:28:02.051050+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "Gappy-Hackathon",
-    "source_files": [
-      "Gappy AI Hackathon Details.docx"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 4,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "/app/data/datasets/ds_01KW72Z48EB6XPT16638E9PXAW"
-  },
-  "ds_01KWW7KNZPTBVP7SAQWGTKG1VB": {
-    "id": "ds_01KWW7KNZPTBVP7SAQWGTKG1VB",
-    "name": "ReContext-1-DS",
-    "description": null,
-    "created_at": "2026-07-06T17:28:57.078945+00:00",
-    "updated_at": "2026-07-06T17:34:09.510698+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "ReContext",
-    "source_files": [
-      "ReContext.pdf"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 10,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.2",
-    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KWW7KNZPTBVP7SAQWGTKG1VB"
-  },
-  "ds_01KWY90JZN42S1EXXD99KXQWK7": {
-    "id": "ds_01KWY90JZN42S1EXXD99KXQWK7",
-    "name": "OptiAgent-DS-1",
-    "description": null,
-    "created_at": "2026-07-07T12:31:57.429243+00:00",
-    "updated_at": "2026-07-07T12:34:41.276654+00:00",
-    "generation_method": "synthetic",
-    "source_collection": "OptiAgent",
-    "source_files": [
-      "OptiAgent.pdf"
-    ],
-    "generator_model": "gemini-3.1-flash-lite",
-    "total_pairs": 10,
-    "evaluated_pairs": 0,
-    "status": "completed",
-    "tags": [],
-    "version": "1.0.1",
-    "dataset_dir": "/app/data/datasets/ds_01KWY90JZN42S1EXXD99KXQWK7"
+    "dataset_dir": "/app/data/datasets/ds_01KXT0D6F63RKBHZWKJF1QA75T"
   }
 }

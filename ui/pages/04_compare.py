@@ -403,22 +403,52 @@ else:
                     "max_output_tokens": max_output_tokens,
                     "dataset_name_override": dataset_name_override.strip() or None,
                 }
+                
+                # Add this constant near the top of the file
+                _HARD_GRID_LIMIT = 6   # max configs before UI blocks the request entirely
 
-                with st.spinner(
-                    f"Running {grid_size} model config(s) against "
-                    f"{selected_dataset['total_pairs']} pair(s)..."
-                ):
-                    try:
-                        matrix = client.run_comparison(payload)
-                        st.session_state["selected_comparison_detail"] = matrix
-                        st.success(
-                            f"✅ Comparison complete — "
-                            f"{matrix['n_models']} model(s) ranked. "
-                            f"Best: {matrix['best_model_id']} "
-                            f"({matrix['best_composite_score']:.2f}/5.0)"
-                        )
-                    except APIError as exc:
-                        st.error(f"Comparison failed: {exc.detail}")
+                # Add this check before the spinner block:
+                if grid_size > _HARD_GRID_LIMIT:
+                    st.error(
+                        f"❌ Grid too large: {grid_size} configs requested "
+                        f"(max {_HARD_GRID_LIMIT} for free-tier APIs).\n\n"
+                        f"Current: {len(model_ids)} models × "
+                        f"{len(top_k_values or [5])} top_k × "
+                        f"{len(temperatures or [1])} temperature(s) = {grid_size} runs.\n\n"
+                        f"Reduce to {_HARD_GRID_LIMIT} or fewer total configurations."
+                    )
+                else:
+                    with st.spinner(
+                        f"Running {grid_size} model config(s) against "
+                        f"{selected_dataset['total_pairs']} pair(s)... "
+                        f"this can take a while for larger grids."
+                    ):
+                        try:
+                            matrix = client.run_comparison(payload)
+                            st.session_state["selected_comparison_detail"] = matrix
+                            st.success(
+                                f"✅ Comparison complete — "
+                                f"{matrix['n_models']} model(s) ranked. "
+                                f"Best: {matrix['best_model_id']} "
+                                f"({matrix['best_composite_score']:.2f}/5.0)"
+                            )
+                        except APIError as exc:
+                            if exc.status_code == 408 or exc.error_type == "request_timeout":
+                                st.error("⏱️ Comparison timed out")
+                                st.warning(exc.detail)
+                                st.info(
+                                    f"**Your current configuration:** "
+                                    f"{len(model_ids)} models × "
+                                    f"{len(top_k_values or [5])} top_k value(s) = "
+                                    f"**{grid_size} runs**\n\n"
+                                    f"Free-tier API limits (~15-30 RPM) mean large grids "
+                                    f"take several minutes. The backend may still be "
+                                    f"processing — check the Evaluate page's run history "
+                                    f"in a few minutes to see if any individual runs "
+                                    f"completed successfully."
+                                )
+                            else:
+                                st.error(f"Comparison failed: {exc.detail}")
                         
     # if submitted:
     #     try:
