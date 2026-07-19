@@ -102,6 +102,8 @@ from src.ingestion.base import Document
 from src.vectorstore.base import BaseVectorStore
 from src.vectorstore.embeddings import EmbeddingManager
 
+from src.api.ratelimit import GENERATE_LIMIT, limiter
+
 router = APIRouter()
 
 # ===========================================================================
@@ -464,8 +466,10 @@ def _sample_chunks_sync(
     status_code=status.HTTP_201_CREATED,
     summary="Generate a synthetic Q&A dataset from a collection",
 )
+@limiter.limit(GENERATE_LIMIT)
 async def generate_dataset(
-    request: GenerateDatasetRequest,
+    # request: GenerateDatasetRequest,
+    request: Request,
     settings: Settings = Depends(get_app_settings),
     embedding_manager: EmbeddingManager = Depends(get_embedding_manager),
     vector_store: BaseVectorStore = Depends(get_vector_store),

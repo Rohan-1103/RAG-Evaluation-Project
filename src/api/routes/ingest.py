@@ -75,6 +75,8 @@ from src.ingestion.pipeline import FileIngestionResult, IngestionPipeline, Inges
 from src.vectorstore.base import BaseVectorStore, CollectionInfo
 from src.vectorstore.embeddings import EmbeddingManager
 
+from src.api.ratelimit import INGEST_LIMIT, limiter
+
 router = APIRouter()
 
 # ===========================================================================
@@ -305,7 +307,9 @@ async def _save_upload(upload: UploadFile, destination: Path) -> Path:
     status_code=status.HTTP_201_CREATED,
     summary="Upload and ingest documents into a ChromaDB collection",
 )
+@limiter.limit(INGEST_LIMIT)
 async def ingest_files(
+    request: Request, 
     collection_name: str = Form(
         ...,
         description=(

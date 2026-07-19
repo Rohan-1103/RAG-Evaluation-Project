@@ -53,13 +53,15 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
 from config.settings import Settings, get_settings
+# ADD import at top of app.py
+from src.api.auth import verify_api_key
 from src.api.dependencies import AppState
 from src.comparison.runner import ComparisonRunner, ComparisonRunnerError
 from src.dataset.base import GenerationError
@@ -75,25 +77,72 @@ from src.vectorstore.base import (
 from src.vectorstore.chroma import ChromaVectorStore
 from src.vectorstore.embeddings import EmbeddingError, EmbeddingManager
 
+# ADD imports
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from src.api.ratelimit import limiter
+
+# ADD import
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import Response
+from starlette.middleware.gzip import GZipMiddleware
+
+from src.rag.clients import LLMClientError
+
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+class MaxBodySizeMiddleware(BaseHTTPMiddleware):
+    """
+    Reject requests exceeding MAX_UPLOAD_SIZE_MB before they reach
+    any route handler. Without this, a 1GB file upload would be fully
+    buffered into memory before FastAPI's own validation could reject it.
+    """
+    MAX_UPLOAD_BYTES: int = 50 * 1024 * 1024  # 50 MB
+
+    async def dispatch(
+        self, request: StarletteRequest, call_next: Any
+    ) -> Response:
+        if request.method == "POST":
+            content_length = request.headers.get("content-length")
+            if content_length and int(content_length) > self.MAX_UPLOAD_BYTES:
+                return Response(
+                    content='{"error":"file_too_large","detail":"'
+                    f'Upload exceeds maximum allowed size of '
+                    f'{self.MAX_UPLOAD_BYTES // (1024*1024)}MB."}}',
+                    status_code=413,
+                    media_type="application/json",
+                )
+        return await call_next(request)
+
+
 # ===========================================================================
 # RESOURCE CONSTRUCTION — the dependency graph from AppState's docstring
 # ===========================================================================
 
 async def _build_app_state(settings: Settings) -> AppState:
-    """
-    Construct every application-scoped resource in dependency order.
+    """Construct every application-scoped resource in dependency order.
 
     Each step logs its own success/failure so a startup failure points
-    immediately at which resource failed to construct, rather than
-    producing a single opaque traceback at the bottom of the chain.
+    immediately at which resource failed to construct, rather than producing a
+    single opaque traceback at the bottom of the chain.
 
     Raises whatever the underlying constructor raises — EmbeddingError,
-    VectorStoreError, RuntimeError from evaluator initialisation, etc.
-    None of these are caught here; lifespan() below is responsible for
-    deciding what a startup failure means for the running process.
+    VectorStoreError, RuntimeError from evaluator initialisation, etc. None of
+    these are caught here; lifespan() below is responsible for deciding what a
+    startup failure means for the running process.
     """
+    loop = asyncio.get_event_loop()
+    executor = ThreadPoolExecutor(
+        max_workers=2,
+        thread_name_prefix="rag_eval_worker",
+    )
+    loop.set_default_executor(executor)
+    logger.info("Application startup: ThreadPoolExecutor(max_workers=2) set.")
+    
     startup_start = time.monotonic()
-
     logger.info("Application startup: constructing resources...")
 
     database = await startup_db()
@@ -121,6 +170,36 @@ async def _build_app_state(settings: Settings) -> AppState:
         settings=settings,
     )
     logger.info("Application startup: RAG pipeline ready.")
+    
+    try:
+        collections = vector_store.list_collections()
+        if collections:
+            # Warm up against the first available collection.
+            # warm_up() embeds a probe query + queries top_k=1 —
+            # zero API calls, zero quota consumed.
+            warmed = rag_pipeline.warm_up(
+                collection_name=collections[0].name,
+                model_id=settings.dataset_gen.model,
+            )
+            if warmed:
+                logger.info(
+                    f"Application startup: RAG pipeline warmed up "
+                    f"against collection '{collections[0].name}'."
+                )
+            else:
+                logger.warning(
+                    "Application startup: RAG pipeline warm-up failed — "
+                    "check embedding model and ChromaDB configuration."
+                )
+        else:
+            logger.info(
+                "Application startup: No collections yet — "
+                "warm-up skipped (ingest documents to populate ChromaDB)."
+            )
+    except Exception as exc:
+        # Warm-up failure is non-fatal — the server starts anyway.
+        # The first real query will pay the cold-start cost instead.
+        logger.warning(f"Application startup: warm-up skipped: {exc}")
 
     evaluation_engine = EvaluationEngine.from_settings(settings)
     logger.info(
@@ -135,6 +214,14 @@ async def _build_app_state(settings: Settings) -> AppState:
     )
     logger.info("Application startup: comparison runner ready.")
 
+    # Warn if CORS is too permissive
+    if "*" in settings.api.cors_origins:
+        logger.error(
+            "SECURITY: CORS is set to '*' — this allows any origin to "
+            "call your API. Set API_CORS_ORIGINS to your exact "
+            "Streamlit URL before public deployment."
+        )
+
     elapsed_ms = (time.monotonic() - startup_start) * 1000
     logger.info(
         f"Application startup: all resources ready in {elapsed_ms:.0f}ms."
@@ -148,6 +235,7 @@ async def _build_app_state(settings: Settings) -> AppState:
         evaluation_engine=evaluation_engine,
         comparison_runner=comparison_runner,
     )
+
 
 # ===========================================================================
 # LIFESPAN — startup and shutdown
@@ -227,6 +315,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
 
     _configure_cors(app, resolved_settings)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
+    app.add_middleware(MaxBodySizeMiddleware)
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
     _register_exception_handlers(app)
     _register_routers(app)
 
@@ -444,45 +537,96 @@ def _register_exception_handlers(app: FastAPI) -> None:
                 ),
             },
         )
+    
+    # ADD new handler inside _register_exception_handlers():
+    @app.exception_handler(LLMClientError)
+    async def _handle_llm_client_error(
+        request: Request, exc: LLMClientError
+    ) -> JSONResponse:
+        """
+        LLM provider failures → 502 with provider-specific guidance.
+
+        Distinct from the generic VectorStoreError/EmbeddingError 502s —
+        LLMClientError carries provider + model_id which lets us give the
+        user actionable information (which provider failed, what to check)
+        rather than a generic "upstream service unavailable."
+        """
+        provider_status_urls = {
+            "google":      "https://status.google.com",
+            "groq":        "https://groqstatus.com",
+            "openrouter":  "https://status.openrouter.ai",
+        }
+        status_url = provider_status_urls.get(exc.provider, "")
+
+        logger.error(
+            f"LLMClientError: provider={exc.provider}, "
+            f"model={exc.model_id}, reason={exc.reason}"
+        )
+
+        detail = (
+            f"LLM provider '{exc.provider}' failed for model '{exc.model_id}': "
+            f"{exc.reason}"
+        )
+        if status_url:
+            detail += f" Check provider status at {status_url}"
+
+        return JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            content={
+                "error": "llm_provider_error",
+                "provider": exc.provider,
+                "model_id": exc.model_id,
+                "detail": detail,
+            },
+        )    
 
 # ===========================================================================
 # ROUTER REGISTRATION
 # ===========================================================================
 
 def _register_routers(app: FastAPI) -> None:
-    """
-    Mount all route modules under src/api/routes/.
-
-    Imports are deferred inside this function (rather than at module
-    top-level) so that importing src.api.app for its create_app()
-    factory alone — e.g. from a test that only needs the exception
-    handler behaviour — does not transitively require every route
-    module's dependencies to already be importable. This matters
-    during incremental development: route files for endpoints not yet
-    written simply aren't imported here yet, and adding a new router
-    is a one-line addition to this function with no other ripple
-    effects.
-    """
     from src.api.routes import compare, datasets, evaluate, ingest, models
 
+    # Auth dependency applied to every route in every router.
+    # /health is defined directly on app (not via a router) so it
+    # stays public — Docker/Render healthchecks don't send API keys.
+    _auth = [Depends(verify_api_key)]
+
     app.include_router(
-        ingest.router, prefix="/api/v1/ingest", tags=["ingestion"]
+        ingest.router,
+        prefix="/api/v1/ingest",
+        tags=["ingestion"],
+        dependencies=_auth,
     )
     app.include_router(
-        datasets.router, prefix="/api/v1/datasets", tags=["datasets"]
+        datasets.router,
+        prefix="/api/v1/datasets",
+        tags=["datasets"],
+        dependencies=_auth,
     )
     app.include_router(
-        evaluate.router, prefix="/api/v1/evaluate", tags=["evaluation"]
+        evaluate.router,
+        prefix="/api/v1/evaluate",
+        tags=["evaluation"],
+        dependencies=_auth,
     )
     app.include_router(
-        compare.router, prefix="/api/v1/compare", tags=["comparison"]
+        compare.router,
+        prefix="/api/v1/compare",
+        tags=["comparison"],
+        dependencies=_auth,
     )
     app.include_router(
-        models.router, prefix="/api/v1/models", tags=["models"]
+        models.router,
+        prefix="/api/v1/models",
+        tags=["models"],
+        dependencies=_auth,
     )
 
+    # /health stays public — no _auth dependency
     @app.get("/health", tags=["health"])
     async def health_check(request: Request) -> dict[str, Any]:
+        # ... existing health check code unchanged ...
         """
         Liveness/readiness probe.
 

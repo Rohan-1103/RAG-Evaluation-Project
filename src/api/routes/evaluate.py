@@ -87,6 +87,8 @@ from src.rag.pipeline import RAGPipeline
 from src.rag.schema import ModelRunConfig
 from src.storage.repository import RunRepository, RunSummary
 
+from src.api.ratelimit import EVALUATE_LIMIT, limiter
+
 router = APIRouter()
 
 # ===========================================================================
@@ -505,8 +507,10 @@ def _map_run_status_to_dataset_status(run_status: RunStatus) -> DatasetStatus:
     status_code=status.HTTP_201_CREATED,
     summary="Run RAG answering + LLM-as-a-Judge evaluation for one model",
 )
+@limiter.limit(EVALUATE_LIMIT)
 async def run_evaluation(
-    request: RunEvaluationRequest,
+    # request: RunEvaluationRequest,
+    request: Request,
     rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
     evaluation_engine: EvaluationEngine = Depends(get_evaluation_engine),
     dataset_store: DatasetStore = Depends(get_dataset_store),

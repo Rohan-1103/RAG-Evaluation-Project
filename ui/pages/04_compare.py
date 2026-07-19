@@ -404,18 +404,19 @@ else:
                     "dataset_name_override": dataset_name_override.strip() or None,
                 }
                 
-                # Add this constant near the top of the file
-                _HARD_GRID_LIMIT = 6   # max configs before UI blocks the request entirely
-
-                # Add this check before the spinner block:
-                if grid_size > _HARD_GRID_LIMIT:
+                n_pairs = selected_dataset["total_pairs"]
+                total_evaluations = n_pairs * grid_size
+                _MAX_EVALUATIONS = 200
+                
+                if total_evaluations > _MAX_EVALUATIONS:
                     st.error(
-                        f"❌ Grid too large: {grid_size} configs requested "
-                        f"(max {_HARD_GRID_LIMIT} for free-tier APIs).\n\n"
-                        f"Current: {len(model_ids)} models × "
-                        f"{len(top_k_values or [5])} top_k × "
-                        f"{len(temperatures or [1])} temperature(s) = {grid_size} runs.\n\n"
-                        f"Reduce to {_HARD_GRID_LIMIT} or fewer total configurations."
+                        f"❌ Too many evaluations: {n_pairs} pairs × {grid_size} "
+                        f"configs = **{total_evaluations}** total "
+                        f"(max {_MAX_EVALUATIONS}).\n\n"
+                        f"Options:\n"
+                        f"• Use a smaller dataset (20-30 pairs recommended for comparison)\n"
+                        f"• Reduce the number of model configs to "
+                        f"{_MAX_EVALUATIONS // n_pairs} or fewer"
                     )
                 else:
                     with st.spinner(

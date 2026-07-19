@@ -112,6 +112,8 @@ ipython = "^8.27.0"
 jupyterlab = "^4.2.5"               # notebook exploration during dev
 python-dotenv = "^1.0.1"            # REMOVE ?
 
+slowapi = "^0.1.9"
+
 # =============================================================================
 # SCRIPTS (CLI entrypoints via Typer)
 # =============================================================================

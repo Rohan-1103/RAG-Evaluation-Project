@@ -74,6 +74,11 @@ class GroqConfig(BaseSettings):
         str,
         Field(default="", description="Groq API key. Optional — leave blank if unused."),
     ] = ""
+    
+    def __repr__(self) -> str:
+        return (
+            f"GroqConfig(api_key='{'*' * 8 if self.api_key else 'NOT SET'}')"
+        )
 
 class OpenRouterConfig(BaseSettings):
     """OpenRouter provider config. Optional — opt-in like Groq."""
@@ -101,6 +106,11 @@ class OpenRouterConfig(BaseSettings):
         default="RAG Eval Bench",
         description="Your app name — sent as X-Title header.",
     )
+    
+    def __repr__(self) -> str:
+        return (
+            f"OpenRouterConfig(api_key='{'*' * 8 if self.api_key else 'NOT SET'}')"
+        )
 
 class GeminiConfig(BaseSettings):
     """Google Gemini LLM provider configuration."""
@@ -120,6 +130,11 @@ class GeminiConfig(BaseSettings):
             description="Google Gemini API key. Required.",
         ),
     ]
+    def __repr__(self) -> str:
+        return (
+            f"GeminiConfig(api_key='{'*' * 8 if self.api_key else 'NOT SET'}', "
+            f"model='{self.model}')"
+        )
 
 
 class EmbeddingConfig(BaseSettings):
@@ -484,7 +499,6 @@ class ComparisonConfig(BaseSettings):
         ),
     ]
 
-
 class APIConfig(BaseSettings):
     """FastAPI backend server configuration."""
 
@@ -501,9 +515,6 @@ class APIConfig(BaseSettings):
     reload: Annotated[bool, Field(default=True)]
     log_level: Annotated[str, Field(default="info")]
 
-    # Plain string — pydantic-settings reads strings perfectly fine.
-    # Parsed into a list via the property below.
-    # Rename avoids pydantic-settings trying to coerce it into list[str].
     cors_origins_raw: Annotated[
         str,
         Field(
@@ -512,24 +523,58 @@ class APIConfig(BaseSettings):
         ),
     ] = "http://localhost:8501,http://127.0.0.1:8501"
 
+    secret_key: Annotated[
+        str,
+        Field(
+            default="",
+            description=(
+                "Secret key for API authentication. "
+                "Required in production — all requests must include "
+                "X-API-Key: <secret_key> header. "
+                "Empty string disables auth (development only)."
+            ),
+        ),
+    ] = ""
+
+    auth_enabled: Annotated[
+        bool,
+        Field(
+            default=True,
+            description=(
+                "Enable API key authentication. "
+                "Set to false ONLY for local development. "
+                "Never disable in production."
+            ),
+        ),
+    ] = True
+
+    cors_origins_str: str = Field(
+        default="http://localhost:8501",
+        description=(
+            "Comma-separated list of allowed CORS origins. "
+            "In production set to your exact Streamlit Cloud URL: "
+            "https://your-app.streamlit.app "
+            "Never use * in production."
+        ),
+    )
+
     @property
     def cors_origins(self) -> list[str]:
-        """
-        Parse cors_origins_raw into a list at access time.
-        Handles both comma-separated and JSON array formats.
-        Never touches pydantic-settings field parsing.
+        """Parse cors_origins_raw into a list at access time.
+
+        Handles both comma-separated and JSON array formats. Never touches
+        pydantic-settings field parsing.
         """
         import json
 
         raw = self.cors_origins_raw.strip()
-
         if raw.startswith("["):
             try:
                 return json.loads(raw)
             except json.JSONDecodeError:
                 pass
-
         return [o.strip() for o in raw.split(",") if o.strip()]
+
 
 
 class LoggingConfig(BaseSettings):

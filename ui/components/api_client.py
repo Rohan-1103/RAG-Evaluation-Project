@@ -50,7 +50,6 @@ class APIError(Exception):
         self.error_type = error_type
         super().__init__(f"[{status_code}] {error_type or 'error'}: {detail}")
 
-
 class APIClient:
     """
     Synchronous httpx wrapper over every route registered in
@@ -58,10 +57,20 @@ class APIClient:
     named to match the endpoint's purpose, not its HTTP verb+path —
     pages call client.run_evaluation(...), never client.post("/api/v1/evaluate/run", ...).
     """
-
-    def __init__(self, base_url: str, timeout: float = 600.0) -> None:
-        self._client = httpx.Client(base_url=base_url.rstrip("/"), timeout=timeout)
-
+    def __init__(
+        self,
+        base_url: str,
+        timeout: float = 600.0,
+        api_key: str = "",
+    ) -> None:
+        headers = {}
+        if api_key:
+            headers["X-API-Key"] = api_key
+        self._client = httpx.Client(
+            base_url=base_url.rstrip("/"),
+            timeout=timeout,
+            headers=headers,
+        )
 
 # FIND _request() method and replace it entirely:
     def _request(
@@ -299,7 +308,6 @@ class APIClient:
             "GET", f"/api/v1/compare/{matrix_id}/export.csv"
         )
 
-
 @st.cache_resource(show_spinner=False)
 def get_api_client() -> APIClient:
     """
@@ -310,7 +318,10 @@ def get_api_client() -> APIClient:
     single button click).
     """
     settings = get_settings()
-    return APIClient(base_url=settings.api_base_url, timeout=600.0)
-
+    return APIClient(
+        base_url=settings.api_base_url,
+        timeout=600.0,
+        api_key=settings.api.secret_key,
+    )
 
 __all__ = ["APIClient", "APIError", "get_api_client"]

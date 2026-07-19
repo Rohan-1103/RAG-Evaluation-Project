@@ -59,6 +59,9 @@ from src.dataset.schema import (
     EvalDataset,
     GenerationMethod,
 )
+# ADD import at top
+# import fcntl   # Unix only — see Windows fallback below
+import sys
 
 # ===========================================================================
 # INDEX ENTRY
@@ -252,10 +255,77 @@ class DatasetStore:
         self._base_dir = base_dir.resolve()
         self._base_dir.mkdir(parents=True, exist_ok=True)
         self._index_path = self._base_dir / self._INDEX_FILE
+        self._lock_path = self._base_dir / ".index.lock"
 
-        # In-memory index cache — invalidated on every write
-        self._index_cache: dict[str, DatasetIndexEntry] | None = None
+    def _persist_index(
+        self,
+        index: dict[str, DatasetIndexEntry],
+    ) -> None:
+        """
+        Write the index to disk atomically with cross-platform file locking.
 
+        Uses msvcrt on Windows, fcntl on Unix/Linux/Mac. Both provide
+        advisory locking that prevents concurrent workers from corrupting
+        index.json via interleaved writes.
+        """
+        import sys
+
+        raw = {
+            dataset_id: entry.to_dict()
+            for dataset_id, entry in index.items()
+        }
+
+        tmp_path = self._index_path.with_suffix(".tmp")
+        lock_path = self._base_dir / ".index.lock"
+        lock_file = open(lock_path, "w")
+
+        try:
+            # Acquire exclusive lock — platform specific
+            if sys.platform == "win32":
+                import msvcrt
+                # Lock 1 byte at position 0 — advisory lock on Windows
+                lock_file.seek(0)
+                try:
+                    msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+                except OSError:
+                    # LK_LOCK retries for 10 seconds then raises —
+                    # if it still fails, proceed anyway (best-effort)
+                    logger.warning(
+                        "DatasetStore: Could not acquire index lock "
+                        "on Windows — proceeding without lock."
+                    )
+            else:
+                import fcntl
+                fcntl.flock(lock_file, fcntl.LOCK_EX)
+
+            # Atomic write under lock
+            try:
+                tmp_path.write_text(
+                    json.dumps(raw, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                tmp_path.replace(self._index_path)
+            except Exception:
+                if tmp_path.exists():
+                    tmp_path.unlink()
+                raise
+
+        finally:
+            # Release lock
+            if sys.platform == "win32":
+                try:
+                    import msvcrt
+                    lock_file.seek(0)
+                    msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+                except Exception:
+                    pass
+            else:
+                import fcntl
+                fcntl.flock(lock_file, fcntl.LOCK_UN)
+            lock_file.close()
+
+        # Invalidate in-memory cache after successful write
+        self._index_cache = None
         logger.info(
             f"DatasetStore initialised. "
             f"base_dir='{self._base_dir}'"

@@ -86,6 +86,8 @@ from src.dataset.store import DatasetNotFoundError, DatasetStore, DatasetStoreEr
 from src.evaluation.schema import ComparisonMatrix, ModelComparisonEntry
 from src.storage.repository import MatrixSummary, RunRepository
 
+from src.api.ratelimit import COMPARE_LIMIT, limiter
+
 router = APIRouter()
 
 # ===========================================================================
@@ -373,8 +375,10 @@ def _load_dataset_or_404(store: DatasetStore, dataset_id: str) -> EvalDataset:
     status_code=status.HTTP_201_CREATED,
     summary="Run a multi-model comparison across one or more RAG models",
 )
+@limiter.limit(COMPARE_LIMIT)
 async def run_comparison(
-    request: RunComparisonRequest,
+    # request: RunComparisonRequest,
+    request: Request,
     dataset_store: DatasetStore = Depends(get_dataset_store),
     comparison_runner: ComparisonRunner = Depends(get_comparison_runner),
     repo: RunRepository = Depends(get_run_repository),

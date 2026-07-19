@@ -226,11 +226,11 @@ class ComparisonRunner:
 
         if not deduped_configs:
             raise ValueError(
-                "ComparisonRunner.arun_comparison: configs list is empty "
-                "after deduplication. Provide at least one ModelRunConfig."
+                "config list is empty after deduplication"
             )
 
         self._enforce_max_total_runs(deduped_configs)
+        self._enforce_pair_run_cap(dataset, deduped_configs)
 
         logger.info(
             f"ComparisonRunner: Starting comparison. "
@@ -509,6 +509,42 @@ class ComparisonRunner:
                     f"understand the API quota implications."
                 ),
             )
+    
+    def _enforce_pair_run_cap(
+    self,
+    dataset: EvalDataset,
+    configs: list[ModelRunConfig],
+    max_total_evaluations: int = 200,
+) -> None:
+        """
+        Reject comparison jobs where n_pairs × n_models exceeds the cap.
+    
+        Each (pair × model) combination costs:
+          - 1 RAG call (Gemini/Groq/OpenRouter)
+          - 4 judge calls (one per metric)
+        = 5 LLM API calls per pair per model.
+    
+        200 evaluations = 1000 API calls maximum — manageable on free tier
+        with rate limiting. 400+ evaluations (4 models × 100 pairs) would
+        exhaust daily quotas and OOM a 512MB free-tier server.
+        """
+        total = len(dataset.pairs) * len(configs)
+        if total > max_total_evaluations:
+            raise ComparisonRunnerError(
+                reason=(
+                    f"Comparison too large: {len(dataset.pairs)} pairs × "
+                    f"{len(configs)} model configs = {total} evaluations "
+                    f"(max {max_total_evaluations}). "
+                    f"Reduce the dataset size or number of model configs. "
+                    f"Tip: use a focused 20-pair dataset for comparisons "
+                    f"rather than your full evaluation set."
+                )
+            )
+        logger.debug(
+            f"ComparisonRunner: pair×model cap check passed. "
+            f"{len(dataset.pairs)} × {len(configs)} = {total} "
+            f"(max {max_total_evaluations})"
+        )
 
     # ------------------------------------------------------------------
     # Grid builder — convenience factory for the UI
