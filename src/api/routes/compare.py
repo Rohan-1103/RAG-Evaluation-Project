@@ -70,7 +70,7 @@ import io
 from typing import Any
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from fastapi.responses import Response
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -135,7 +135,7 @@ class RunComparisonRequest(BaseModel):
             dupes = sorted({m for m in v if v.count(m) > 1})
             raise ValueError(
                 f"Duplicate model_ids: {dupes}. Each model may appear "
-                f"only once per comparison request."
+                f"only once per comparison body."
             )
         return v
 
@@ -379,6 +379,7 @@ def _load_dataset_or_404(store: DatasetStore, dataset_id: str) -> EvalDataset:
 async def run_comparison(
     # request: RunComparisonRequest,
     request: Request,
+    body: RunComparisonRequest = Body(...),
     dataset_store: DatasetStore = Depends(get_dataset_store),
     comparison_runner: ComparisonRunner = Depends(get_comparison_runner),
     repo: RunRepository = Depends(get_run_repository),
@@ -401,32 +402,32 @@ async def run_comparison(
     loop = asyncio.get_event_loop()
 
     dataset = await loop.run_in_executor(
-        None, _load_dataset_or_404, dataset_store, request.dataset_id
+        None, _load_dataset_or_404, dataset_store, body.dataset_id
     )
 
     base_configs = ComparisonRunner.build_grid_configs(
-        model_ids=request.model_ids,
-        collection_name=request.collection_name,
-        top_k_values=request.top_k_values,
-        temperatures=request.temperatures,
-        score_threshold=request.score_threshold,
+        model_ids=body.model_ids,
+        collection_name=body.collection_name,
+        top_k_values=body.top_k_values,
+        temperatures=body.temperatures,
+        score_threshold=body.score_threshold,
     )
     configs = [
         config.model_copy(
-            update={"max_output_tokens": request.max_output_tokens}
+            update={"max_output_tokens": body.max_output_tokens}
         )
         for config in base_configs
     ]
 
     logger.info(
         f"run_comparison: dataset='{dataset.id}', "
-        f"n_configs={len(configs)}, models={request.model_ids}."
+        f"n_configs={len(configs)}, models={body.model_ids}."
     )
 
     matrix = await comparison_runner.arun_comparison(
         dataset=dataset,
         configs=configs,
-        dataset_name_override=request.dataset_name_override,
+        dataset_name_override=body.dataset_name_override,
     )
 
     await repo.save_comparison_matrix(matrix)

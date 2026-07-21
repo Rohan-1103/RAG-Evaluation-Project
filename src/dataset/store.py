@@ -255,6 +255,7 @@ class DatasetStore:
         self._base_dir = base_dir.resolve()
         self._base_dir.mkdir(parents=True, exist_ok=True)
         self._index_path = self._base_dir / self._INDEX_FILE
+        self._index_cache: dict[str, DatasetIndexEntry] | None = None
         self._lock_path = self._base_dir / ".index.lock"
 
     def _persist_index(

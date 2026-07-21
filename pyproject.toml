@@ -46,6 +46,7 @@ lxml = "^5.3.0"                        # fast HTML/XML parser for bs4
 
 # --- API Backend ---
 fastapi = "^0.115.0"
+prometheus-fastapi-instrumentator = "^7.0.0"
 uvicorn = { version = "^0.30.6", extras = ["standard"] }
 httpx = "^0.27.2"                      # async HTTP client (UI → API calls)
 python-multipart = "^0.0.9"           # FastAPI file upload support

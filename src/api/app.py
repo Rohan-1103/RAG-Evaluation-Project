@@ -82,6 +82,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from src.api.ratelimit import limiter
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # ADD import
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -90,9 +91,13 @@ from starlette.responses import Response
 from starlette.middleware.gzip import GZipMiddleware
 
 from src.rag.clients import LLMClientError
-
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+
+# ADD import
+from src.core.logging import setup_logging
+from src.api.middleware import RequestIDMiddleware
+
 
 class MaxBodySizeMiddleware(BaseHTTPMiddleware):
     """
@@ -261,7 +266,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     to touch the broken resource.
     """
     settings = get_settings()
-
+    setup_logging(app_env=settings.app_env)
     app.state.resources = await _build_app_state(settings)
 
     yield
@@ -319,9 +324,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.add_middleware(SlowAPIMiddleware)
     app.add_middleware(MaxBodySizeMiddleware)
+    app.add_middleware(RequestIDMiddleware)
     app.add_middleware(GZipMiddleware, minimum_size=1024)
     _register_exception_handlers(app)
     _register_routers(app)
+    
+    Instrumentator(
+    should_group_status_codes=True,
+    should_ignore_untemplated=True,
+    should_group_untemplated=True,
+    should_respect_env_var=True,
+    env_var_name="ENABLE_METRICS",
+    excluded_handlers=["/health", "/metrics"],).instrument(app).expose(app, include_in_schema=False)
 
     return app
 
@@ -626,36 +640,74 @@ def _register_routers(app: FastAPI) -> None:
     # /health stays public — no _auth dependency
     @app.get("/health", tags=["health"])
     async def health_check(request: Request) -> dict[str, Any]:
-        # ... existing health check code unchanged ...
-        """
-        Liveness/readiness probe.
-
-        Checks the database connection is alive (the one
-        application-scoped resource most likely to fail independently
-        of the others, e.g. disk full, file permissions changed after
-        startup) and reports which resources are attached to
-        app.state. Does NOT make a live Gemini API call on every
-        health check — that would burn API quota on infrastructure
-        monitoring, which is exactly the kind of free-tier-hostile
-        design this project has spent considerable effort avoiding
-        elsewhere (see ComparisonRunner's max_total_runs cap,
-        RAGPipeline.warm_up() skipping generation, etc.).
-        """
+        from src.core.quota import get_quota_status
+        from src.rag.clients import get_circuit_breaker_states
+    
         resources = getattr(request.app.state, "resources", None)
         if resources is None:
-            return {
-                "status": "starting",
-                "database": "unknown",
-            }
-
+            return {"status": "starting", "database": "unknown"}
+    
         db_healthy = await resources.database.health_check()
-
+        cb_states = get_circuit_breaker_states()
+        quota = get_quota_status()
+    
+        # Determine overall status
+        any_circuit_open = any(
+            state == "open" for state in cb_states.values()
+        )
+        any_quota_critical = any(
+            v["pct"] is not None and v["pct"] >= 1.0
+            for v in quota.values()
+        )
+    
+        if not db_healthy or any_quota_critical:
+            overall = "degraded"
+        elif any_circuit_open:
+            overall = "degraded"
+        else:
+            overall = "healthy"
+    
         return {
-            "status": "healthy" if db_healthy else "degraded",
-            "database": "connected" if db_healthy else "unreachable",
-            "embedding_model": resources.embedding_manager.model_name,
-            "embedding_dim": resources.embedding_manager.dimension,
+            "status":           overall,
+            "database":         "connected" if db_healthy else "unreachable",
+            "embedding_model":  resources.embedding_manager.model_name,
+            "embedding_dim":    resources.embedding_manager.dimension,
             "evaluation_metrics": resources.evaluation_engine.metric_names,
+            "circuit_breakers": cb_states,
+            "quota":            quota,
         }
+    # @app.get("/health", tags=["health"])
+    # async def health_check(request: Request) -> dict[str, Any]:
+    #     # ... existing health check code unchanged ...
+    #     """
+    #     Liveness/readiness probe.
+
+    #     Checks the database connection is alive (the one
+    #     application-scoped resource most likely to fail independently
+    #     of the others, e.g. disk full, file permissions changed after
+    #     startup) and reports which resources are attached to
+    #     app.state. Does NOT make a live Gemini API call on every
+    #     health check — that would burn API quota on infrastructure
+    #     monitoring, which is exactly the kind of free-tier-hostile
+    #     design this project has spent considerable effort avoiding
+    #     elsewhere (see ComparisonRunner's max_total_runs cap,
+    #     RAGPipeline.warm_up() skipping generation, etc.).
+    #     """
+    #     resources = getattr(request.app.state, "resources", None)
+    #     if resources is None:
+    #         return {
+    #             "status": "starting",
+    #             "database": "unknown",
+    #         }
+
+    #     db_healthy = await resources.database.health_check()
+
+    #     return {
+    #         "status": "healthy" if db_healthy else "degraded",
+    #         "database": "connected" if db_healthy else "unreachable",
+    #         "embedding_model": resources.embedding_manager.model_name,
+    #         "embedding_dim": resources.embedding_manager.dimension,
+    #         "evaluation_metrics": resources.evaluation_engine.metric_names,
+    #     }
 
 __all__ = ["create_app", "lifespan"]

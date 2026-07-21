@@ -62,7 +62,7 @@ import asyncio
 import io
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from fastapi.responses import Response
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field
@@ -511,6 +511,7 @@ def _map_run_status_to_dataset_status(run_status: RunStatus) -> DatasetStatus:
 async def run_evaluation(
     # request: RunEvaluationRequest,
     request: Request,
+    body: RunEvaluationRequest = Body(...),
     rag_pipeline: RAGPipeline = Depends(get_rag_pipeline),
     evaluation_engine: EvaluationEngine = Depends(get_evaluation_engine),
     dataset_store: DatasetStore = Depends(get_dataset_store),
@@ -532,10 +533,10 @@ async def run_evaluation(
     loop = asyncio.get_event_loop()
 
     dataset = await loop.run_in_executor(
-        None, _load_dataset_or_404, dataset_store, request.dataset_id
+        None, _load_dataset_or_404, dataset_store, body.dataset_id
     )
 
-    if request.force_rerun:
+    if body.force_rerun:
         _reset_pairs_to_pending(dataset)
         logger.info(
             f"run_evaluation: force_rerun=true — reset all "
@@ -549,7 +550,7 @@ async def run_evaluation(
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=(
-                    f"Dataset '{request.dataset_id}' has no PENDING "
+                    f"Dataset '{body.dataset_id}' has no PENDING "
                     f"pairs — every pair has already been answered or "
                     f"evaluated. Set force_rerun=true to reset and "
                     f"re-run the entire dataset, e.g. against a "
@@ -558,17 +559,17 @@ async def run_evaluation(
             )
 
     run_config = ModelRunConfig(
-        model_id=request.model_id,
-        collection_name=request.collection_name,
-        top_k=request.top_k,
-        temperature=request.temperature,
-        max_output_tokens=request.max_output_tokens,
-        score_threshold=request.score_threshold,
+        model_id=body.model_id,
+        collection_name=body.collection_name,
+        top_k=body.top_k,
+        temperature=body.temperature,
+        max_output_tokens=body.max_output_tokens,
+        score_threshold=body.score_threshold,
     )
 
     logger.info(
         f"run_evaluation: Running RAG for dataset '{dataset.id}' "
-        f"with model '{request.model_id}'..."
+        f"with model '{body.model_id}'..."
     )
 
     batch_result = await loop.run_in_executor(
@@ -581,8 +582,8 @@ async def run_evaluation(
             detail=(
                 f"RAG pipeline answered 0/{batch_result.total_pairs} "
                 f"pairs. Check that collection_name "
-                f"'{request.collection_name}' exists and contains "
-                f"documents, and that model_id '{request.model_id}' "
+                f"'{body.collection_name}' exists and contains "
+                f"documents, and that model_id '{body.model_id}' "
                 f"is available."
             ),
         )
@@ -595,10 +596,10 @@ async def run_evaluation(
 
     report = await evaluation_engine.arun(
         dataset=dataset,
-        rag_model=request.model_id,
-        collection_name=request.collection_name,
-        top_k=request.top_k,
-        temperature=request.temperature,
+        rag_model=body.model_id,
+        collection_name=body.collection_name,
+        top_k=body.top_k,
+        temperature=body.temperature,
     )
 
     dataset.metadata = dataset.metadata.model_copy(

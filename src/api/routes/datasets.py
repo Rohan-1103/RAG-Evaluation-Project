@@ -69,7 +69,7 @@ from datetime import datetime
 from typing import Any
 
 import pandas as pd
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Body, Request
 from fastapi.responses import Response
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -470,6 +470,7 @@ def _sample_chunks_sync(
 async def generate_dataset(
     # request: GenerateDatasetRequest,
     request: Request,
+    body: GenerateDatasetRequest = Body(...),
     settings: Settings = Depends(get_app_settings),
     embedding_manager: EmbeddingManager = Depends(get_embedding_manager),
     vector_store: BaseVectorStore = Depends(get_vector_store),
@@ -493,9 +494,9 @@ async def generate_dataset(
         lambda: _sample_chunks_sync(
             embedding_manager,
             vector_store,
-            request.collection_name,
-            request.seed_query or _DEFAULT_SEED_QUERY,
-            request.sample_size,
+            body.collection_name,
+            body.seed_query or _DEFAULT_SEED_QUERY,
+            body.sample_size,
         ),
     )
 
@@ -504,7 +505,7 @@ async def generate_dataset(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=(
                 f"No chunks retrieved from collection "
-                f"'{request.collection_name}'. The collection may be "
+                f"'{body.collection_name}'. The collection may be "
                 f"empty, or no chunks matched the sampling query "
                 f"closely enough."
             ),
@@ -512,14 +513,14 @@ async def generate_dataset(
 
     logger.info(
         f"generate_dataset: Sampled {len(chunks)} chunks from "
-        f"'{request.collection_name}'. Starting generation..."
+        f"'{body.collection_name}'. Starting generation..."
     )
 
     generator = GeminiDatasetGenerator(
         config=GeneratorConfig(
-            n_pairs_per_chunk=request.n_pairs_per_chunk,
-            max_pairs_total=request.max_pairs_total,
-            temperature=request.temperature,
+            n_pairs_per_chunk=body.n_pairs_per_chunk,
+            max_pairs_total=body.max_pairs_total,
+            temperature=body.temperature,
         ),
         dataset_gen_config=settings.dataset_gen,
         # gemini_api_key=settings.gemini.api_key,
@@ -530,8 +531,8 @@ async def generate_dataset(
             None,
             lambda: generator.generate(
                 chunks=chunks,
-                dataset_name=request.dataset_name,
-                source_collection=request.collection_name,
+                dataset_name=body.dataset_name,
+                source_collection=body.collection_name,
             ),
         )
     except Exception as exc:
@@ -541,11 +542,11 @@ async def generate_dataset(
         # for this error's HTTP representation.
         raise
 
-    if request.description or request.tags:
+    if body.description or body.tags:
         dataset.metadata = dataset.metadata.model_copy(
             update={
-                "description": request.description,
-                "tags": request.tags,
+                "description": body.description,
+                "tags": body.tags,
             }
         )
 
@@ -566,7 +567,7 @@ async def generate_dataset(
         name=dataset.name,
         status=dataset.metadata.status.value,
         total_pairs=len(dataset.pairs),
-        source_collection=request.collection_name,
+        source_collection=body.collection_name,
         generation=GenerationStatsOut.from_domain(gen_stats),
     )
 
@@ -737,10 +738,10 @@ async def edit_pair(
             ),
         )
 
-    if request.question is not None:
-        pair.question = request.question
-    if request.ground_truth_answer is not None:
-        pair.ground_truth_answer = request.ground_truth_answer
+    if body.question is not None:
+        pair.question = body.question
+    if body.ground_truth_answer is not None:
+        pair.ground_truth_answer = body.ground_truth_answer
 
     await loop.run_in_executor(None, store.save, dataset)
     await repo.upsert_dataset_record(

@@ -36,5 +36,24 @@
     "tags": [],
     "version": "1.0.1",
     "dataset_dir": "/app/data/datasets/ds_01KXT0D6F63RKBHZWKJF1QA75T"
+  },
+  "ds_01KY2JBM6EGRZHK85KEEQGFWDS": {
+    "id": "ds_01KY2JBM6EGRZHK85KEEQGFWDS",
+    "name": "quota_test",
+    "description": null,
+    "created_at": "2026-07-21T14:47:55.854420+00:00",
+    "updated_at": "2026-07-21T14:47:55.855628+00:00",
+    "generation_method": "synthetic",
+    "source_collection": "Data_Poison",
+    "source_files": [
+      "Pretraining_Data_Poison.pdf"
+    ],
+    "generator_model": "gemini-3.1-flash-lite",
+    "total_pairs": 1,
+    "evaluated_pairs": 0,
+    "status": "ready",
+    "tags": [],
+    "version": "1.0.0",
+    "dataset_dir": "D:\\rag-eval-bench\\data\\datasets\\ds_01KY2JBM6EGRZHK85KEEQGFWDS"
   }
 }

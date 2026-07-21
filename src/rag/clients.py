@@ -59,6 +59,8 @@ from tenacity import (
     wait_exponential,
 )
 
+from src.core.quota import record_llm_call
+
 
 # ===========================================================================
 # RESULT TYPE
@@ -451,6 +453,7 @@ class GeminiClient(BaseLLMClient):
                 system_instruction=system_instruction,
             )
             cb.record_success()
+            record_llm_call("google")
             return result
         except LLMClientError:
             cb.record_failure()
@@ -650,6 +653,7 @@ class GroqClient(BaseLLMClient):
                 system_instruction=system_instruction,
             )
             cb.record_success()
+            record_llm_call("groq")
             return result
         except LLMClientError:
             cb.record_failure()
@@ -878,6 +882,7 @@ class OpenRouterClient(BaseLLMClient):
                 system_instruction=system_instruction,
             )
             cb.record_success()
+            record_llm_call("openrouter")
             return result
         except LLMClientError:
             cb.record_failure()
