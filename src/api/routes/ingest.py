@@ -60,7 +60,7 @@ import asyncio
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile, status
 from loguru import logger
@@ -326,7 +326,7 @@ async def ingest_files(
             "(by deterministic ID) are skipped rather than updated."
         ),
     ),
-    files: list[UploadFile] = File(
+    files: Sequence[UploadFile] = File(
         ...,
         description=(
             "One or more documents to ingest. Supported formats: "
