@@ -108,7 +108,6 @@ EXPOSE 8000 8501
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || curl -f http://localhost:8501/_stcore/health || exit 1
 
-# No default CMD: this single image runs as two entirely different
-# processes (uvicorn for the api service, streamlit for the ui service)
-# depending on which docker-compose service starts it — the command is
-# supplied explicitly per-service in docker-compose.yml below, never here.
+# Production startup: seed demo data then start the API server.
+# seed_on_startup.py is a no-op if collections already exist.
+CMD ["sh", "-c", "python scripts/seed_on_startup.py && uvicorn src.api.app:create_app --factory --host 0.0.0.0 --port ${PORT:-8000}"]

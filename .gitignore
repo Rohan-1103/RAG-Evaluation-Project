@@ -14,3 +14,5 @@ wheels/
 data/
 logs/
 .venv/
+
+ui/.streamlit/secrets.toml

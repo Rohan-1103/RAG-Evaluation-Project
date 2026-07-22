@@ -311,17 +311,26 @@ class APIClient:
 @st.cache_resource(show_spinner=False)
 def get_api_client() -> APIClient:
     """
-    Process-wide singleton APIClient. Cached the same way EmbeddingManager
-    is application-scoped on the FastAPI side — one connection pool, not
-    one per page rerun (Streamlit reruns the entire script on every
-    interaction, so this caching is what prevents reconnecting on every
-    single button click).
+    Get API client, reading credentials from:
+    1. Streamlit secrets (production on Streamlit Cloud)
+    2. Settings / .env file (local development)
     """
-    settings = get_settings()
+    try:
+        # Streamlit Cloud: secrets available via st.secrets
+        api_key = st.secrets.get("API_SECRET_KEY", "")
+        base_url = st.secrets.get(
+            "API_BASE_URL", "http://localhost:8000"
+        )
+    except Exception:
+        # Local development: fall back to Settings
+        settings = get_settings()
+        api_key = settings.api.secret_key
+        base_url = settings.api_base_url
+
     return APIClient(
-        base_url=settings.api_base_url,
+        base_url=base_url,
         timeout=600.0,
-        api_key=settings.api.secret_key,
+        api_key=api_key,
     )
 
 __all__ = ["APIClient", "APIError", "get_api_client"]

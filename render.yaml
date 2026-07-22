@@ -1,0 +1,43 @@
+# render.yaml
+# Render Blueprint — deploys the FastAPI backend as a web service.
+# Commit this file and Render auto-detects it on the first deploy.
+
+services:
+  - type: web
+    name: rag-eval-bench-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    # Free tier: 512MB RAM, shared CPU, sleeps after 15min inactivity
+    plan: free
+
+    # Start command — overrides Dockerfile's default CMD
+    startCommand: >
+      uvicorn src.api.app:create_app --factory
+      --host 0.0.0.0 --port $PORT
+
+    healthCheckPath: /health
+
+    envVars:
+      # These are set in Render's dashboard, not committed here
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: API_SECRET_KEY
+        sync: false
+      - key: APP_ENV
+        value: production
+      - key: API_BASE_URL
+        value: https://rag-eval-bench-api.onrender.com
+      - key: API_CORS_ORIGINS
+        value: https://your-app.streamlit.app
+      - key: API_RELOAD
+        value: "false"
+      - key: DATABASE_URL
+        value: sqlite+aiosqlite:///./data/rag_eval.db
+      - key: CHROMA_PERSIST_DIR
+        value: ./data/vectorstore
