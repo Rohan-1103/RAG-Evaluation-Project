@@ -73,6 +73,7 @@ langsmith = "^0.1.147"        # free tier, Python 3.13 compatible
 
 # --- Retry & Resilience ---
 tenacity = "^9.0.0"                   # exponential backoff for API calls
+slowapi = "^0.1.9"                    # rate limiting for FastAPI
 
 # --- Utilities ---
 rich = "^13.8.1"                      # pretty console output for scripts
@@ -112,8 +113,6 @@ pre-commit = "^3.8.0"
 ipython = "^8.27.0"
 jupyterlab = "^4.2.5"               # notebook exploration during dev
 python-dotenv = "^1.0.1"            # REMOVE ?
-
-slowapi = "^0.1.9"
 
 # =============================================================================
 # SCRIPTS (CLI entrypoints via Typer)
